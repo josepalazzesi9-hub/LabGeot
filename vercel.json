@@ -1,34 +1,13 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/web/client/index.html"
-    },
-    {
-      "source": "/descargas",
-      "destination": "/web/client/descargas.html"
-    },
-    {
-      "source": "/logo.png",
-      "destination": "/web/client/logo.png"
-    },
-    {
-      "source": "/data/(.*)",
-      "destination": "/web/client/data/$1"
-    },
+  "headers": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/web/client",
-      "destination": "/web/client/index.html"
-    },
-    {
-      "source": "/web/client/(.*)",
-      "destination": "/web/client/$1"
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" }
+      ]
     }
   ]
 }

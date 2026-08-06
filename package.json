@@ -2,10 +2,9 @@
   "name": "labgeot",
   "version": "1.0.0",
   "description": "Visor Geoespacial MapAPELL para LabGEOT en Vercel",
-  "main": "web/client/index.html",
+  "main": "index.html",
   "scripts": {
-    "start": "npx serve web/client",
-    "dev": "npx serve web/client -l 3000"
+    "start": "npx serve ."
   },
   "keywords": [
     "labgeot",

@@ -1,835 +1,2138 @@
+<!-- vercel-test: probando preview deployment por branch -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <!-- Vercel Preview Deployment -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vercel Features Playground & Testing Suite</title>
-  <meta name="description" content="Playground interactivo para probar Vercel Serverless Functions, Edge Headers, vercel.json y Variables de Entorno.">
-  <link rel="icon" type="image/svg+xml" href="./public/vercel-icon.svg">
+  <meta name="description" content="MapAPELL — Visor geoespacial del Proceso APELL Bahía Blanca. Consultá barrios, centros de evacuados, comedores comunitarios, establecimientos deportivos y recursos de respuesta primaria.">
+  <meta property="og:title" content="MapAPELL | Visor Geoespacial APELL Bahía Blanca">
+  <meta property="og:description" content="Visor interactivo de recursos del Proceso APELL: barrios, centros de evacuados, comedores y respuesta primaria.">
+  <meta property="og:image" content="logo.png">
+  <meta property="og:type" content="website">
+  <title>MapAPELL | Visor Geoespacial APELL Bahía Blanca</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root {
+    --primary-color: #2e7d32;
+    /* Verde APELL */
+    --secondary-color: #1b5e20;
+    --bg-light: #f8f9fa;
+    --text-dark: #333;
+    --sidebar-width: 320px;
+  }
+
+  body,
+  html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    height: 100dvh;
+    font-family: 'Roboto', sans-serif;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+
+  /* --- Header --- */
+  header {
+    height: 60px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    position: relative;
+  }
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-container img {
+    height: 40px;
+  }
+
+  .logo-container h1 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .header-buttons {
+    display: flex;
+    gap: 15px;
+  }
+
+  .btn-outline {
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+  }
+
+  .btn-outline:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  .btn-fill {
+    background: var(--primary-color);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+  }
+
+  .btn-fill:hover {
+    background: var(--secondary-color);
+  }
+
+  /* --- Layout Principal --- */
+  .main-container {
+    display: flex;
+    height: calc(100% - 60px);
+    height: calc(100dvh - 60px);
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* --- Sidebar --- */
+  #sidebar {
+    width: var(--sidebar-width);
+    background: white;
+    border-right: 1px solid #ddd;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    z-index: 999;
+  }
+
+  #sidebar.collapsed {
+    margin-left: calc(-1 * var(--sidebar-width));
+  }
+
+  .sidebar-header {
+    padding: 15px 15px 15px 55px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .search-layers {
+    padding: 15px;
+    background: #fdfdfd;
+  }
+
+  .search-layers input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+
+  .layers-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+  }
+
+  .layer-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .layer-item:hover {
+    background: #f5f5f5;
+  }
+
+  .layer-item.active { 
+    background: #e8f5e9; 
+    border-left: 4px solid var(--primary-color); 
+  }
+
+  .layer-item i {
+    margin-right: 15px;
+    color: var(--primary-color);
+    width: 20px;
+    text-align: center;
+  }
+
+  .layer-item i.layer-visibility-icon {
+    margin-right: 0;
+    margin-left: auto;
+    color: #ccc;
+    transition: color 0.3s;
+  }
   
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  .layer-item i.layer-visibility-icon.on {
+    color: var(--primary-color);
+  }
 
-  <style>
-    :root {
-      --bg-dark: #000000;
-      --bg-card: #0a0a0a;
-      --bg-card-hover: #121212;
-      --border-color: rgba(255, 255, 255, 0.14);
-      --border-glow: rgba(255, 255, 255, 0.25);
-      
-      --text-main: #ededed;
-      --text-muted: #888888;
-      --text-subtle: #555555;
-      
-      --accent-white: #ffffff;
-      --accent-cyan: #50e3c2;
-      --accent-blue: #0070f3;
-      --accent-purple: #7928ca;
-      --accent-pink: #ff0080;
-      --accent-green: #00e676;
-      --accent-warning: #f5a623;
+  .layer-item .layer-name {
+    flex: 1;
+    font-size: 0.95rem;
+  }
 
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-    }
+  .sub-layers {
+    display: none;
+    background: #f9f9f9;
+    max-height: 250px;
+    overflow-y: auto;
+    border-bottom: 1px solid #ddd;
+  }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+  .sub-layers.open {
+    display: block;
+  }
 
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: var(--font-sans);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      line-height: 1.6;
-      overflow-x: hidden;
-      background-image: 
-        radial-gradient(circle at 50% 0%, rgba(121, 40, 202, 0.15), transparent 40%),
-        radial-gradient(circle at 90% 20%, rgba(0, 112, 243, 0.1), transparent 30%);
-    }
+  .sub-layer-item {
+    padding: 8px 20px 8px 50px;
+    font-size: 0.85rem;
+    color: #555;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
 
-    /* Ambient Header Glow */
-    .header-glow {
+  
+  .sub-layer-item.active {
+    font-weight: bold;
+    color: var(--primary-color);
+    background-color: #e8f5e9;
+    border-radius: 4px;
+  }
+  .sub-layer-item:hover {
+    background: #e0e0e0;
+    color: var(--primary-color);
+  }
+
+  /* --- Mapa --- */
+  .leaflet-container {
+    background-color: #f8f9fa !important;
+  }
+
+  #map {
+    flex: 1;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    touch-action: pan-x pan-y;
+  }
+
+  /* --- Controles Flotantes --- */
+  .map-overlay-search {
+    position: absolute;
+    top: 20px;
+    right: 80px;
+    z-index: 1000;
+    background: white;
+    padding: 5px 15px;
+    border-radius: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    width: 300px;
+  }
+
+  .map-overlay-search input {
+    border: none;
+    padding: 8px;
+    outline: none;
+    flex: 1;
+  }
+
+  .global-search-results {
+    position: absolute;
+    top: 65px;
+    right: 80px;
+    z-index: 1000;
+    background: white;
+    width: 330px;
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: none;
+    flex-direction: column;
+  }
+
+  .global-search-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .global-search-item:last-child {
+    border-bottom: none;
+  }
+
+  .global-search-item:hover {
+    background: #f5f5f5;
+  }
+
+  .global-search-title {
+    font-weight: 500;
+    color: #333;
+  }
+
+  .global-search-type {
+    font-size: 0.75rem;
+    color: var(--primary-color);
+    margin-top: 2px;
+  }
+
+  .floating-tools {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .tool-btn {
+    width: 45px;
+    height: 45px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    font-size: 1.2rem;
+  }
+
+  .basemap-selector {
+    position: absolute;
+    top: 185px;
+    right: 80px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: none;
+    flex-direction: row;
+    gap: 10px;
+    padding: 10px;
+  }
+  .basemap-selector.active {
+    display: flex;
+  }
+  .basemap-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    padding: 5px;
+    transition: 0.2s;
+    width: 80px;
+    text-align: center;
+  }
+  .basemap-option:hover {
+    background: #f0f0f0;
+  }
+  .basemap-option.selected {
+    border-color: var(--primary-color);
+    background: #e8f5e9;
+  }
+  .basemap-option img {
+    width: 60px;
+    height: 60px;
+    border-radius: 4px;
+    object-fit: cover;
+    margin-bottom: 5px;
+  }
+  .basemap-option span {
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #444;
+  }
+
+  .toggle-sidebar {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    z-index: 1001;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    cursor: pointer;
+  }
+
+  /* --- Footer --- */
+  .map-footer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 2px 10px;
+    font-size: 0.8rem;
+    z-index: 1000;
+    border-top-left-radius: 5px;
+  }
+
+  /* --- Adaptación Móvil Responsive --- */
+  @media (max-width: 768px) {
+    #sidebar {
       position: absolute;
       top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 1200px;
-      height: 180px;
-      background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.08), transparent 70%);
-      pointer-events: none;
-      z-index: 0;
+      left: 0;
+      bottom: 0;
+      height: 100%;
+      z-index: 1005;
+      box-shadow: 2px 0 12px rgba(0, 0, 0, 0.25);
     }
 
-    /* Header Nav */
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border-color);
-      padding: 1rem 2rem;
+    .map-overlay-search {
+      top: 12px;
+      right: 60px;
+      left: 55px;
+      width: auto;
     }
 
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    .global-search-results {
+      top: 55px;
+      right: 15px;
+      left: 15px;
+      width: auto;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      text-decoration: none;
-      color: var(--accent-white);
-      font-weight: 700;
-      font-size: 1.15rem;
+    .floating-tools {
+      top: 60px;
+      right: 10px;
     }
 
-    .vercel-logo-svg {
-      width: 24px;
-      height: 24px;
-      fill: #ffffff;
-      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
-      transition: transform 0.3s ease;
-    }
-
-    .brand:hover .vercel-logo-svg {
-      transform: scale(1.1) rotate(5deg);
-    }
-
-    .nav-badge {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 0.25rem 0.75rem;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: var(--accent-green);
-      box-shadow: 0 0 8px var(--accent-green);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 0.6; transform: scale(0.95); }
-      50% { opacity: 1; transform: scale(1.1); }
-      100% { opacity: 0.6; transform: scale(0.95); }
-    }
-
-    /* Main Container */
-    main {
-      flex: 1;
-      max-width: 1200px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem 4rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* Hero Section */
-    .hero {
-      text-align: center;
-      margin-bottom: 3.5rem;
-    }
-
-    .hero-title {
-      font-size: 3rem;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      margin-bottom: 1rem;
-      background: linear-gradient(180deg, #ffffff 0%, #a1a1a1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-subtitle {
-      font-size: 1.15rem;
-      color: var(--text-muted);
-      max-width: 680px;
-      margin: 0 auto 1.5rem;
-    }
-
-    .tags-row {
-      display: flex;
-      justify-content: center;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-    }
-
-    .tag {
-      background: #111;
-      border: 1px solid var(--border-color);
-      color: var(--text-muted);
-      padding: 0.35rem 0.85rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-family: var(--font-mono);
-      transition: all 0.2s ease;
-    }
-
-    .tag:hover {
-      border-color: var(--accent-white);
-      color: var(--accent-white);
-    }
-
-    /* Grid Layout */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 1.5rem;
-      margin-bottom: 2.5rem;
-    }
-
-    .col-6 { grid-column: span 6; }
-    .col-12 { grid-column: span 12; }
-    .col-4 { grid-column: span 4; }
-
-    @media (max-width: 900px) {
-      .col-6, .col-4 { grid-column: span 12; }
-      .hero-title { font-size: 2.2rem; }
-    }
-
-    /* Card Component */
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 1.75rem;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
-      display: flex;
+    .basemap-selector {
+      top: 60px;
+      right: 60px;
       flex-direction: column;
-      position: relative;
-      overflow: hidden;
+      max-width: 110px;
     }
 
-    .card:hover {
-      border-color: var(--border-glow);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    #route-panel {
+      left: 10px;
+      bottom: 25px;
+      width: calc(100% - 70px);
+      max-width: 280px;
     }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.25rem;
-    }
-
-    .card-title-group {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .card-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-    }
-
-    .card-title {
-      font-size: 1.15rem;
-      font-weight: 600;
-      color: var(--accent-white);
-    }
-
-    .card-desc {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-bottom: 1.5rem;
-    }
-
-    /* Buttons */
-    .btn-group {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.25rem;
-    }
-
-    .btn {
-      background: var(--accent-white);
-      color: #000;
-      border: none;
-      padding: 0.6rem 1.1rem;
-      border-radius: 8px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: var(--font-sans);
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .btn:hover {
-      background: #ccc;
-      transform: translateY(-1px);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--text-main);
-      border: 1px solid var(--border-color);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: var(--accent-white);
-      color: var(--accent-white);
-    }
-
-    .btn-outline {
-      background: transparent;
-      color: var(--accent-cyan);
-      border: 1px solid rgba(80, 227, 194, 0.4);
-    }
-
-    .btn-outline:hover {
-      background: rgba(80, 227, 194, 0.1);
-      border-color: var(--accent-cyan);
-      color: var(--accent-cyan);
-    }
-
-    /* Terminal / Code Viewer */
-    .console-viewer {
-      background: #000;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 1rem;
-      font-family: var(--font-mono);
-      font-size: 0.83rem;
-      color: #a9b7c6;
-      max-height: 280px;
-      overflow-y: auto;
-      position: relative;
-    }
-
-    .console-topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 0.5rem;
-      margin-bottom: 0.75rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .console-dots {
-      display: flex;
-      gap: 6px;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-    }
-
-    .dot-red { background: #ff5f56; }
-    .dot-yellow { background: #ffbd2e; }
-    .dot-green { background: #27c93f; }
-
-    .json-key { color: #50e3c2; }
-    .json-string { color: #ce9178; }
-    .json-number { color: #b5cea8; }
-    .json-boolean { color: #569cd6; }
-
-    /* Geo Cards Grid */
-    .geo-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-    }
-
-    .geo-item {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 0.85rem;
-      text-align: center;
-    }
-
-    .geo-label {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.25rem;
-    }
-
-    .geo-val {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--accent-white);
-      word-break: break-all;
-    }
-
-    /* Checklist */
-    .checklist {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-    }
-
-    .checklist-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.75rem;
-      font-size: 0.9rem;
-      color: var(--text-main);
-      padding: 0.6rem 0.8rem;
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 6px;
-      border: 1px solid transparent;
-      transition: all 0.2s ease;
-    }
-
-    .checklist-item:hover {
-      border-color: var(--border-color);
-      background: rgba(255, 255, 255, 0.04);
-    }
-
-    .checklist-icon {
-      color: var(--accent-green);
-      font-size: 1.1rem;
-      line-height: 1;
-    }
-
-    /* Code snippet box */
-    .code-block {
-      background: #050505;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 0.75rem 1rem;
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      color: var(--accent-cyan);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 0.5rem;
-    }
-
-    .copy-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--border-color);
-      color: var(--text-muted);
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.75rem;
-      transition: all 0.2s ease;
-    }
-
-    .copy-btn:hover {
-      color: var(--accent-white);
-      border-color: var(--accent-white);
-    }
-
-    /* Footer */
-    footer {
-      border-top: 1px solid var(--border-color);
-      padding: 2rem;
-      text-align: center;
-      color: var(--text-subtle);
-      font-size: 0.85rem;
-    }
-
-    footer a {
-      color: var(--text-muted);
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      color: var(--accent-white);
-    }
-  </style>
+  }
+</style>
 </head>
+
 <body>
-
-  <div class="header-glow"></div>
-
-  <!-- Header -->
   <header>
-    <div class="nav-container">
-      <a href="#" class="brand">
-        <svg class="vercel-logo-svg" viewBox="0 0 512 512">
-          <path d="M256 48L496 464H16L256 48Z" />
-        </svg>
-        <span>Vercel Playground</span>
-      </a>
-
-      <div class="nav-badge">
-        <span class="status-dot"></span>
-        <span id="env-badge">Modo: Local / Vercel Ready</span>
-      </div>
+    <a href="https://www.apellbahiablanca.org.ar/" target="_blank" class="logo-container" style="text-decoration: none;"><img src="logo.png" alt="APELL Bahía Blanca" style="height: 50px; object-fit: contain;"></a>
+    <div class="header-buttons">
+      <a href="descargas.html" class="btn-fill" title="Descargar Capas en formato GeoJSON"><i class="fas fa-download" style="margin-right: 8px;"></i>Portal de Descargas</a>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main>
-    <!-- Hero Section -->
-    <section class="hero">
-      <h1 class="hero-title">Vercel Testing Suite</h1>
-      <p class="hero-subtitle">
-        Repositorio interactivo de pruebas para experimentar con Vercel Serverless Functions, Edge Headers, reglas de <code>vercel.json</code> y Variables de Entorno.
-      </p>
-      <div class="tags-row">
-        <span class="tag">🚀 Serverless API</span>
-        <span class="tag">🌍 Edge Geolocation</span>
-        <span class="tag">⚙️ vercel.json</span>
-        <span class="tag">🔐 Environment Variables</span>
-        <span class="tag">📦 Zero Config</span>
+  <div class="main-container">
+    <button class="toggle-sidebar" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+    <div id="sidebar">
+      <div class="sidebar-header">
+        <span style="font-weight: 800; font-size: 1.1rem; color: #444; letter-spacing: 0.5px;">MapAPELL <span style="font-weight: 400; color: #888;">| Capas</span></span>
+        <i class="fas fa-layer-group" style="color: var(--primary-color); font-size: 1.2rem;"></i>
       </div>
-    </section>
-
-    <!-- Grid of Tests -->
-    <div class="grid">
-
-      <!-- Test 1: Serverless API Functions -->
-      <div class="card col-6">
-        <div class="card-header">
-          <div class="card-title-group">
-            <div class="card-icon">⚡</div>
-            <div>
-              <h2 class="card-title">Serverless API Routes</h2>
-              <p class="card-desc" style="margin-bottom:0">Prueba ejecuciones backend en <code>/api/*</code></p>
-            </div>
-          </div>
-          <span id="api-status" class="tag">Listo</span>
+      <div class="search-layers">
+        <input type="text" id="layer-filter-input" placeholder="Filtrar capas..." oninput="filterLayers(this.value)">
+      </div>
+      <div class="layers-list">
+        
+        <div class="layer-item" id="barrios-btn" onclick="toggleDropdown('barrios')">
+            <i class="fas fa-chevron-right" id="barrios-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-map-marked-alt"></i>
+            <span class="layer-name">Barrios Proceso APELL</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="barrios-visibility" onclick="event.stopPropagation(); toggleLayer('barrios')"></i>
+        </div>
+        <div class="sub-layers" id="barrios-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando barrios...</div>
         </div>
 
-        <p class="card-desc">
-          En Vercel, cualquier archivo dentro de la carpeta <code>/api</code> se convierte automáticamente en una función Serverless sin configuración adicional.
-        </p>
-
-        <div class="btn-group">
-          <button class="btn" onclick="callApi('/api/time', 'GET')">
-            <span>GET /api/time</span>
-          </button>
-          <button class="btn btn-secondary" onclick="callApi('/api/geo', 'GET')">
-            <span>GET /api/geo</span>
-          </button>
-          <button class="btn btn-outline" onclick="callApi('/api/echo', 'POST', { testPayload: 'Hola Vercel', date: new Date().toISOString() })">
-            <span>POST /api/echo</span>
-          </button>
+        <div class="layer-item" id="centros-btn" onclick="toggleDropdown('centros')">
+            <i class="fas fa-chevron-right" id="centros-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-hands-helping"></i>
+            <span class="layer-name">Centros de Evacuados</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="centros-visibility" onclick="event.stopPropagation(); toggleLayer('centros')"></i>
+        </div>
+        <div class="sub-layers" id="centros-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando centros...</div>
         </div>
 
-        <div class="console-viewer">
-          <div class="console-topbar">
-            <div class="console-dots">
-              <span class="dot dot-red"></span>
-              <span class="dot dot-yellow"></span>
-              <span class="dot dot-green"></span>
-            </div>
-            <span id="api-latency">HTTP Status: - | Latencia: -</span>
-          </div>
-          <pre id="api-output">// Haz clic en uno de los botones de arriba para hacer un request a la API</pre>
+
+        <div class="layer-item" id="comedores-btn" onclick="toggleDropdown('comedores')">
+            <i class="fas fa-chevron-right" id="comedores-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-utensils"></i>
+            <span class="layer-name">Comedores Comunitarios</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="comedores-visibility" onclick="event.stopPropagation(); toggleLayer('comedores')"></i>
+        </div>
+        <div class="sub-layers" id="comedores-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando comedores...</div>
+        </div>
+
+        <div class="layer-item" id="deportivos-btn" onclick="toggleDropdown('deportivos')">
+            <i class="fas fa-chevron-right" id="deportivos-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-futbol"></i>
+            <span class="layer-name">Establecimientos Deportivos</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="deportivos-visibility" onclick="event.stopPropagation(); toggleLayer('deportivos')"></i>
+        </div>
+        <div class="sub-layers" id="deportivos-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+        <div class="layer-item" id="respuesta-btn" onclick="toggleDropdown('respuesta')">
+            <i class="fas fa-chevron-right" id="respuesta-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-shield-alt"></i>
+            <span class="layer-name">Respuesta Primaria</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="respuesta-visibility" onclick="event.stopPropagation(); toggleLayer('respuesta')"></i>
+        </div>
+        <div class="sub-layers" id="respuesta-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+        <div class="layer-item" id="delegaciones-btn" onclick="toggleDropdown('delegaciones')">
+            <i class="fas fa-chevron-right" id="delegaciones-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-landmark"></i>
+            <span class="layer-name">Delegaciones Municipales</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="delegaciones-visibility" onclick="event.stopPropagation(); toggleLayer('delegaciones')"></i>
+        </div>
+        <div class="sub-layers" id="delegaciones-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+        <div class="layer-item" id="escuelas-btn" onclick="toggleDropdown('escuelas')">
+            <i class="fas fa-chevron-right" id="escuelas-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-school"></i>
+            <span class="layer-name">Escuelas</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="escuelas-visibility" onclick="event.stopPropagation(); toggleLayer('escuelas')"></i>
+        </div>
+        <div class="sub-layers" id="escuelas-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
         </div>
       </div>
-
-      <!-- Test 2: Edge Geolocation & Headers -->
-      <div class="card col-6">
-        <div class="card-header">
-          <div class="card-title-group">
-            <div class="card-icon">🌐</div>
-            <div>
-              <h2 class="card-title">Vercel Edge Geolocation</h2>
-              <p class="card-desc" style="margin-bottom:0">Inspección de cabeceras inyectadas por la red Edge</p>
-            </div>
-          </div>
-        </div>
-
-        <p class="card-desc">
-          Cuando despliegas en Vercel, la red Edge inyecta cabeceras como <code>x-vercel-ip-country</code> y <code>x-vercel-ip-city</code> en cada petición.
-        </p>
-
-        <div class="geo-grid">
-          <div class="geo-item">
-            <div class="geo-label">País</div>
-            <div class="geo-val" id="geo-country">Esperando...</div>
-          </div>
-          <div class="geo-item">
-            <div class="geo-label">Ciudad</div>
-            <div class="geo-val" id="geo-city">Esperando...</div>
-          </div>
-          <div class="geo-item">
-            <div class="geo-label">Región Vercel</div>
-            <div class="geo-val" id="geo-region">Esperando...</div>
-          </div>
-          <div class="geo-item">
-            <div class="geo-label">IP Cliente</div>
-            <div class="geo-val" id="geo-ip">Esperando...</div>
-          </div>
-        </div>
-
-        <div class="btn-group">
-          <button class="btn btn-secondary" onclick="fetchGeoData()">
-            <span>🔄 Probar Geolocalización Edge</span>
+      
+      <!-- Custom Origin Selection Widget -->
+      <div class="custom-origin-widget" style="padding: 15px; border-top: 1px solid #ddd; background: #ffffff;">
+        <span style="font-weight: bold; font-size: 0.95rem; color: #333; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+          <i class="fas fa-map-pin" style="color: #e65100;"></i> Origen Personalizado
+        </span>
+        <button id="custom-origin-toggle-btn" onclick="toggleCustomOriginPickMode()" style="width: 100%; padding: 9px 12px; background: #fff3e0; color: #e65100; border: 1.5px solid #ffb74d; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
+          <i class="fas fa-crosshairs"></i> <span id="custom-origin-btn-text">Activar Origen en Mapa</span>
+        </button>
+        <div id="custom-origin-status-box" style="display: none; margin-top: 10px; font-size: 0.8rem; background: #fff8e1; color: #f57f17; padding: 8px 10px; border-radius: 6px; border-left: 4px solid #ffb300;">
+          <div id="custom-origin-status-text" style="font-weight: bold; margin-bottom: 4px; color: #e65100;">Punto fijado en el mapa</div>
+          <button onclick="quitarPuntoOrigen()" style="background: transparent; border: none; color: #c62828; text-decoration: underline; padding: 0; font-size: 0.75rem; cursor: pointer; font-weight: bold;">
+            <i class="fas fa-trash-alt"></i> Eliminar punto origen
           </button>
-        </div>
-
-        <div class="code-block" style="margin-top:auto">
-          <span>x-vercel-execution-region</span>
-          <span id="edge-region-tag" style="color:#aaa">dev-local</span>
         </div>
       </div>
 
-      <!-- Test 3: vercel.json Configuration -->
-      <div class="card col-6">
-        <div class="card-header">
-          <div class="card-title-group">
-            <div class="card-icon">⚙️</div>
-            <div>
-              <h2 class="card-title">Configuración <code>vercel.json</code></h2>
-              <p class="card-desc" style="margin-bottom:0">Redirecciones, Rewrites y Custom Headers</p>
-            </div>
-          </div>
+      <!-- Weather and Simulation Widget -->
+      <div class="simulation-widget" style="padding: 15px; border-top: 1px solid #ddd; background: #fafafa;">
+        <span style="font-weight: bold; font-size: 0.95rem; color: #333; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <i class="fas fa-wind" style="color: #2e7d32;"></i> Clima y Fuga Química
+        </span>
+        <div id="weather-info" style="font-size: 0.85rem; color: #555; margin-bottom: 12px; display: flex; align-items: center; gap: 15px;">
+          <div><i class="fas fa-location-arrow" id="wind-arrow" style="transition: transform 0.5s; display: inline-block;"></i> <span id="wind-dir-text">Cargando viento...</span></div>
+          <div><i class="fas fa-tachometer-alt"></i> <span id="wind-speed-text">-- km/h</span></div>
         </div>
-
-        <p class="card-desc">
-          El archivo <code>vercel.json</code> te permite personalizar rutas, cabeceras CORS y redirecciones del sitio.
-        </p>
-
-        <div class="checklist">
-          <div class="checklist-item">
-            <span class="checklist-icon">✓</span>
-            <div>
-              <strong>Rewrite <code>/ping</code></strong>
-              <div style="font-size:0.8rem; color:var(--text-muted)">Redirige internamente <code>/ping</code> a <code>/api/time</code></div>
-            </div>
-          </div>
-          <div class="checklist-item">
-            <span class="checklist-icon">✓</span>
-            <div>
-              <strong>Redirect <code>/vercel-docs</code></strong>
-              <div style="font-size:0.8rem; color:var(--text-muted)">Redirección HTTP 302 a la documentación oficial</div>
-            </div>
-          </div>
-          <div class="checklist-item">
-            <span class="checklist-icon">✓</span>
-            <div>
-              <strong>Custom Header</strong>
-              <div style="font-size:0.8rem; color:var(--text-muted)">Inyecta <code>X-Custom-Vercel-Header</code> en la API</div>
-            </div>
-          </div>
+        
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 0.85rem; font-weight: bold; color: #555; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" id="plume-toggle" onchange="togglePlumeSimulation(this.checked)" style="cursor: pointer;">
+            Simular Fuga de Gas
+          </label>
         </div>
-
-        <div class="btn-group" style="margin-top:1.25rem">
-          <button class="btn btn-secondary" onclick="callApi('/ping', 'GET')">
-            <span>Probar Rewrite /ping</span>
-          </button>
-          <a href="/vercel-docs" target="_blank" class="btn btn-outline" style="text-decoration:none">
-            <span>Probar Redirect /vercel-docs ↗</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Test 4: Pass & Deployment Checklist -->
-      <div class="card col-6">
-        <div class="card-header">
-          <div class="card-title-group">
-            <div class="card-icon">🚀</div>
-            <div>
-              <h2 class="card-title">Pasos para Desplegar en Vercel</h2>
-              <p class="card-desc" style="margin-bottom:0">Cómo publicar este repo en la nube</p>
-            </div>
+        
+        <div id="plume-controls" style="display: none; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 0.8rem; color: #555;">
+          <div style="margin-bottom: 8px;">
+            <span style="display: flex; justify-content: space-between;">
+              <span>Dirección del viento (°):</span>
+              <strong id="sim-dir-val">--</strong>
+            </span>
+            <input type="range" id="sim-wind-dir" min="0" max="360" value="0" oninput="updatePlumeFromControls()" style="width: 100%;">
           </div>
-        </div>
-
-        <p class="card-desc">
-          Sigue estos pasos sencillos para conectar tu repositorio local con Vercel:
-        </p>
-
-        <div class="checklist">
-          <div class="checklist-item">
-            <span class="checklist-icon">1</span>
-            <div>Subir este repositorio a GitHub (ej: <code>git push origin main</code>).</div>
+          <div style="margin-bottom: 8px;">
+            <span style="display: flex; justify-content: space-between;">
+              <span>Velocidad del viento (km/h):</span>
+              <strong id="sim-speed-val">--</strong>
+            </span>
+            <input type="range" id="sim-wind-speed" min="5" max="100" value="20" oninput="updatePlumeFromControls()" style="width: 100%;">
           </div>
-          <div class="checklist-item">
-            <span class="checklist-icon">2</span>
-            <div>Ingresar a <a href="https://vercel.com/new" target="_blank" style="color:var(--accent-cyan)">vercel.com/new</a> y seleccionar el repositorio.</div>
-          </div>
-          <div class="checklist-item">
-            <span class="checklist-icon">3</span>
-            <div>Hacer clic en <strong>Deploy</strong> (Vercel detectará el proyecto de forma automática).</div>
-          </div>
-        </div>
-
-        <div style="margin-top: 1.25rem">
-          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.3rem">O despliega directamente con Vercel CLI:</div>
-          <div class="code-block">
-            <code id="cli-cmd">npx vercel</code>
-            <button class="copy-btn" onclick="copyToClipboard('npx vercel')">Copiar</button>
+          <div style="font-size: 0.75rem; color: #888; font-style: italic;">
+            * Arrastrá el marcador ⚠️ en el mapa para simular la fuga en otro punto.
           </div>
         </div>
       </div>
-
     </div>
-  </main>
 
-  <!-- Footer -->
-  <footer>
-    <p>Vercel Playground - Creado para pruebas de Serverless Functions, Edge Network y Configuración Vercel.</p>
-  </footer>
+    <div id="map">
+      <div class="map-overlay-search">
+        <input type="text" id="global-search-input" placeholder="Buscar por nombre de ubicación..." oninput="handleGlobalSearch(event)">
+        <i class="fas fa-search" style="color: #999;"></i>
+      </div>
+      <div id="global-search-results" class="global-search-results"></div>
 
-  <!-- Interactive Logic -->
+      <!-- Panel de Información de Ruta de Evacuación -->
+      <div id="route-panel" style="position: absolute; bottom: 30px; left: 20px; z-index: 1000; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: none; font-size: 0.9rem; color: #333; width: 240px; border-left: 5px solid #0288d1;">
+        <div style="font-weight: bold; margin-bottom: 8px; color: #0288d1; display: flex; align-items: center; gap: 8px;">
+          <i class="fas fa-route"></i> <span id="route-panel-title">Ruta de Evacuación</span>
+        </div>
+        <div style="margin-bottom: 12px; line-height: 1.5;">
+          <div style="font-size: 0.95rem; margin-bottom: 6px;">Distancia: <strong id="route-distance" style="color: #111;">-- km</strong></div>
+          <div style="display: flex; align-items: center; gap: 8px; color: #333; margin-top: 4px;">
+            <i class="fas fa-car" style="color: #0288d1; width: 16px; text-align: center;"></i>
+            <span>En auto: <strong id="route-duration-car">-- min</strong></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; color: #333; margin-top: 4px;">
+            <i class="fas fa-walking" style="color: #e65100; width: 16px; text-align: center;"></i>
+            <span>Caminando: <strong id="route-duration-walk">-- min</strong></span>
+          </div>
+        </div>
+        <button onclick="borrarRuta()" style="width: 100%; padding: 8px; background: #d32f2f; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: background 0.3s;" onmouseover="this.style.background='#b71c1c'" onmouseout="this.style.background='#d32f2f'">
+          Borrar Ruta
+        </button>
+      </div>
+
+      <div class="floating-tools">
+        <button class="tool-btn" onclick="map.zoomIn()" title="Acercar"><i class="fas fa-plus"></i></button>
+        <button class="tool-btn" onclick="map.zoomOut()" title="Alejar"><i class="fas fa-minus"></i></button>
+        <button class="tool-btn" onclick="map.setView([-38.7833, -62.2667], 14)" title="Centrar Mapa"><i class="fas fa-expand"></i></button>
+        <button class="tool-btn" style="background: #0288d1;" onclick="localizarUsuario()" title="Mi Ubicación"><i class="fas fa-crosshairs"></i></button>
+        <button class="tool-btn" style="background: #444;" onclick="toggleBasemapSelector(event)" title="Cambiar Mapa Base"><i class="fas fa-cube"></i></button>
+      </div>
+
+      <div id="basemap-selector" class="basemap-selector">
+        <div class="basemap-option selected" onclick="setBasemap('carto', this)">
+            <img src="https://a.basemaps.cartocdn.com/rastertiles/voyager/13/2767/4943.png" alt="Carto Light">
+            <span>Carto Light</span>
+        </div>
+        <div class="basemap-option" onclick="setBasemap('osm', this)">
+            <img src="https://a.tile.openstreetmap.org/13/2767/4943.png" alt="OSM">
+            <span>OSM</span>
+        </div>
+        <div class="basemap-option" onclick="setBasemap('gstreets', this)">
+            <img src="https://mt0.google.com/vt/lyrs=m&hl=es&x=2767&y=4943&z=13" alt="Google Streets">
+            <span>Google Streets</span>
+        </div>
+        <div class="basemap-option" onclick="setBasemap('gsatellite', this)">
+            <img src="https://mt0.google.com/vt/lyrs=s&hl=es&x=2767&y=4943&z=13" alt="Google Satélite">
+            <span>Google Satélite</span>
+        </div>
+      </div>
+
+      <div class="map-footer" id="scale-info"> Escala 1: 18489333 </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="data/barrios.js?v=2"></script>
+  <script src="data/centros.js?v=2"></script>
+  <script src="data/comedores.js?v=2"></script>
+  <script src="data/deportivos.js?v=2"></script>
+  <script src="data/respuesta.js?v=2"></script>
+  <script src="data/delegaciones.js?v=2"></script>
+  <script src="data/escuelas.js?v=2"></script>
   <script>
-    // Detect environment on load
-    window.addEventListener('DOMContentLoaded', () => {
-      const isVercelHost = window.location.hostname.includes('vercel.app');
-      const badge = document.getElementById('env-badge');
-      if (isVercelHost) {
-        badge.textContent = 'En Vivo en Vercel Edge 🚀';
-        badge.style.color = '#50e3c2';
-      } else {
-        badge.textContent = 'Modo Local / Listo para Vercel';
-      }
 
-      // Auto-fetch geo data on load
-      fetchGeoData();
+    const map = L.map('map', { zoomControl: false }).setView([-38.7833, -62.2667], 14);
+
+    const basemapOptions = {
+        updateWhenIdle: false,
+        updateWhenZooming: false,
+        keepBuffer: 6
+    };
+
+    const basemaps = {
+        carto: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { ...basemapOptions, maxZoom: 19, attribution: 'Proceso APELL' }),
+        osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { ...basemapOptions, maxZoom: 19, attribution: '© OpenStreetMap' }),
+        gstreets: L.tileLayer('https://mt0.google.com/vt/lyrs=m&hl=es&x={x}&y={y}&z={z}', { ...basemapOptions, maxZoom: 20, attribution: 'Google' }),
+        gsatellite: L.tileLayer('https://mt0.google.com/vt/lyrs=s&hl=es&x={x}&y={y}&z={z}', { ...basemapOptions, maxZoom: 20, attribution: 'Google' })
+    };
+
+    let currentBasemap = basemaps.carto;
+    currentBasemap.addTo(map);
+
+    // Actualizar escala dinamicamente
+    function updateScale() {
+        const zoom = map.getZoom();
+        const centerLat = map.getCenter().lat;
+        const metersPerPixel = 156543.03392 * Math.cos(centerLat * Math.PI / 180) / Math.pow(2, zoom);
+        const scale = Math.round(metersPerPixel * 96 / 0.0254);
+        document.getElementById('scale-info').textContent = ' Escala 1: ' + scale.toLocaleString('es-AR');
+    }
+    map.on('zoomend moveend', updateScale);
+    updateScale();
+
+    function toggleBasemapSelector(e) {
+        if(e) e.stopPropagation();
+        document.getElementById('basemap-selector').classList.toggle('active');
+    }
+
+    function setBasemap(type, el) {
+        map.removeLayer(currentBasemap);
+        currentBasemap = basemaps[type];
+        currentBasemap.addTo(map);
+
+        document.querySelectorAll('.basemap-option').forEach(opt => opt.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('basemap-selector').classList.remove('active');
+    }
+
+    let barriosGeoJSON = null;
+    let barriosLayerGroup = null;
+    let isBarriosVisible = false;
+
+    let centrosGeoJSON = null;
+    let centrosLayerGroup = null;
+    let isCentrosVisible = false;
+
+    let comedoresGeoJSON = null;
+    let comedoresLayerGroup = null;
+    let isComedoresVisible = false;
+
+    let deportivosGeoJSON = null;
+    let deportivosLayerGroup = null;
+    let isDeportivosVisible = false;
+
+    let respuestaGeoJSON = null;
+    let respuestaLayerGroup = null;
+    let isRespuestaVisible = false;
+
+    let delegacionesGeoJSON = null;
+    let delegacionesLayerGroup = null;
+    let isDelegacionesVisible = false;
+
+    let escuelasGeoJSON = null;
+    let escuelasLayerGroup = null;
+    let isEscuelasVisible = false;
+
+
+
+    function renderPopupRouteButtons(lat, lng) {
+        return `
+        <div style="margin-top:10px; padding-top:8px; border-top:1px solid #eee; display:flex; flex-direction:column; gap:6px;">
+            <a href="#" onclick="event.preventDefault(); abrirRuta(${lat}, ${lng})" style="display:inline-flex; align-items:center; gap:6px; color:#0288d1; font-weight:bold; font-size:0.85rem; text-decoration:none;">
+                <i class="fas fa-location-arrow"></i> Cómo llegar (GPS)
+            </a>
+            <a href="#" onclick="event.preventDefault(); abrirRutaDesdePuntoPuntual(${lat}, ${lng})" style="display:inline-flex; align-items:center; gap:6px; color:#e65100; font-weight:bold; font-size:0.85rem; text-decoration:none;" title="Calcular distancia desde el punto de origen seleccionado en el mapa">
+                <i class="fas fa-map-pin"></i> Como llegar desde el punto seleccionado
+            </a>
+        </div>
+        `;
+    }
+
+    function initBarrios() {
+        const listDiv = document.getElementById('barrios-list');
+        try {
+            if(typeof barriosData === 'undefined') {
+                throw new Error("El archivo barrios.js no se cargó.");
+            }
+
+            barriosGeoJSON = barriosData;
+            if(!barriosLayerGroup) {
+                barriosLayerGroup = L.geoJSON(barriosGeoJSON, {
+                    style: { color: '#2e7d32', weight: 2, fillColor: '#4caf50', fillOpacity: 0.3 },
+                    onEachFeature: (feature, layer) => {
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${feature.properties.nom || 'Barrio'}</b>`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...barriosGeoJSON.features].sort((a,b) => 
+                (a.properties.nom || "").localeCompare(b.properties.nom || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                item.innerText = feature.properties.nom || 'Barrio Sin Nombre';
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    barriosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if(!isBarriosVisible) {
+                        // Clear all others first to ensure "uno por uno"
+                        barriosLayerGroup.eachLayer(l => {
+                            if (map.hasLayer(l) && l !== targetLayer) {
+                                map.removeLayer(l);
+                            }
+                        });
+                        document.querySelectorAll('#barrios-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+
+                        if (!map.hasLayer(targetLayer)) {
+                            map.addLayer(targetLayer);
+                            item.classList.add('active');
+                            zoomABarrio(feature);
+                        } else {
+                            // If it was already active, clicking it again turns it off
+                            map.removeLayer(targetLayer);
+                            item.classList.remove('active');
+                        }
+                    } else {
+                        zoomABarrio(feature);
+                    }
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando barrios:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
+    function initCentros() {
+        const listDiv = document.getElementById('centros-list');
+        try {
+            if(typeof centrosData === 'undefined') {
+                throw new Error("El archivo centros.js no se cargó.");
+            }
+
+            centrosGeoJSON = centrosData;
+            if(!centrosLayerGroup) {
+                centrosLayerGroup = L.geoJSON(centrosGeoJSON, {
+                    style: { color: '#d32f2f', weight: 2, fillColor: '#f44336', fillOpacity: 0.3 },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${props.nom || 'Centro de Evacuados'}</b><br>Dirección: ${props.dir || '-'}<br>Tipo: ${props.tip || '-'}`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...centrosGeoJSON.features].sort((a,b) => 
+                (a.properties.nom || "").localeCompare(b.properties.nom || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.nom || 'Centro Sin Nombre';
+                const dir = props.dir || 'Sin dirección';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    centrosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if(!isCentrosVisible) {
+                        // Clear all others first to ensure "uno por uno"
+                        centrosLayerGroup.eachLayer(l => {
+                            if (map.hasLayer(l) && l !== targetLayer) {
+                                map.removeLayer(l);
+                            }
+                        });
+                        document.querySelectorAll('#centros-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+
+                        if (!map.hasLayer(targetLayer)) {
+                            map.addLayer(targetLayer);
+                            item.classList.add('active');
+                            zoomACentro(feature);
+                        } else {
+                            // If it was already active, clicking it again turns it off
+                            map.removeLayer(targetLayer);
+                            item.classList.remove('active');
+                        }
+                    } else {
+                        zoomACentro(feature);
+                    }
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando centros:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
+    function initComedores() {
+        const listDiv = document.getElementById('comedores-list');
+        try {
+            if(typeof comedoresData === 'undefined') {
+                throw new Error("El archivo comedores.js no se cargó.");
+            }
+
+            comedoresGeoJSON = comedoresData;
+            if(!comedoresLayerGroup) {
+                comedoresLayerGroup = L.geoJSON(comedoresGeoJSON, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.circleMarker(latlng, {
+                            radius: 8,
+                            fillColor: "#ff9800",
+                            color: "#e65100",
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        });
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${props.Nombre || 'Comedor'}</b><br>Dirección: ${props.Calle || ''} ${props.Numero || ''}<br>Ciudad: ${props.Ciudad || ''}`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...comedoresGeoJSON.features].sort((a,b) => 
+                (a.properties.Nombre || "").localeCompare(b.properties.Nombre || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.Nombre || 'Comedor Sin Nombre';
+                const dir = props.Calle ? `${props.Calle} ${props.Numero || ''}`.trim() : 'Sin dirección';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    comedoresLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if(!isComedoresVisible) {
+                        // Clear all others first to ensure "uno por uno"
+                        comedoresLayerGroup.eachLayer(l => {
+                            if (map.hasLayer(l) && l !== targetLayer) {
+                                map.removeLayer(l);
+                            }
+                        });
+                        document.querySelectorAll('#comedores-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+
+                        if (!map.hasLayer(targetLayer)) {
+                            map.addLayer(targetLayer);
+                            item.classList.add('active');
+                            zoomAComedor(feature);
+                        } else {
+                            // If it was already active, clicking it again turns it off
+                            map.removeLayer(targetLayer);
+                            item.classList.remove('active');
+                        }
+                    } else {
+                        zoomAComedor(feature);
+                    }
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando comedores:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
+    function initDeportivos() {
+        const listDiv = document.getElementById('deportivos-list');
+        try {
+            if(typeof deportivosData === 'undefined') {
+                throw new Error("El archivo deportivos.js no se cargó.");
+            }
+
+            deportivosGeoJSON = deportivosData;
+            if(!deportivosLayerGroup) {
+                deportivosLayerGroup = L.geoJSON(deportivosGeoJSON, {
+                    style: { color: '#1976d2', weight: 2, fillColor: '#2196f3', fillOpacity: 0.3 },
+                    onEachFeature: (feature, layer) => {
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${feature.properties.Name || 'Establecimiento Deportivo'}</b>`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...deportivosGeoJSON.features].sort((a,b) => 
+                (a.properties.Name || "").localeCompare(b.properties.Name || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.Name || 'Establecimiento Sin Nombre';
+                const dir = props.dir || 'Sin dirección';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    deportivosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if(!isDeportivosVisible) {
+                        // Clear all others first to ensure "uno por uno"
+                        deportivosLayerGroup.eachLayer(l => {
+                            if (map.hasLayer(l) && l !== targetLayer) {
+                                map.removeLayer(l);
+                            }
+                        });
+                        document.querySelectorAll('#deportivos-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+
+                        if (!map.hasLayer(targetLayer)) {
+                            map.addLayer(targetLayer);
+                            item.classList.add('active');
+                            zoomADeportivo(feature);
+                        } else {
+                            // If it was already active, clicking it again turns it off
+                            map.removeLayer(targetLayer);
+                            item.classList.remove('active');
+                        }
+                    } else {
+                        zoomADeportivo(feature);
+                    }
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando deportivos:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
+    function initRespuesta() {
+        const listDiv = document.getElementById('respuesta-list');
+        try {
+            if(typeof respuestaData === 'undefined') {
+                throw new Error("El archivo respuesta.js no se cargó.");
+            }
+
+            respuestaGeoJSON = respuestaData;
+            if(!respuestaLayerGroup) {
+                respuestaLayerGroup = L.geoJSON(respuestaGeoJSON, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.circleMarker(latlng, {
+                            radius: 8,
+                            fillColor: "#9c27b0",
+                            color: "#6a1b9a",
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        });
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${feature.properties.nom || 'Respuesta Primaria'}</b>`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...respuestaGeoJSON.features].sort((a,b) => 
+                (a.properties.nom || "").localeCompare(b.properties.nom || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.nom || 'Sin Nombre';
+                const dir = props.dir || 'Sin dirección';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    respuestaLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if(!isRespuestaVisible) {
+                        // Clear all others first to ensure "uno por uno"
+                        respuestaLayerGroup.eachLayer(l => {
+                            if (map.hasLayer(l) && l !== targetLayer) {
+                                map.removeLayer(l);
+                            }
+                        });
+                        document.querySelectorAll('#respuesta-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+
+                        if (!map.hasLayer(targetLayer)) {
+                            map.addLayer(targetLayer);
+                            item.classList.add('active');
+                            zoomARespuesta(feature);
+                        } else {
+                            // If it was already active, clicking it again turns it off
+                            map.removeLayer(targetLayer);
+                            item.classList.remove('active');
+                        }
+                    } else {
+                        zoomARespuesta(feature);
+                    }
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando respuesta:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
+    function initDelegaciones() {
+        const listDiv = document.getElementById('delegaciones-list');
+        try {
+            if(typeof delegacionesData === 'undefined') {
+                throw new Error("El archivo delegaciones.js no se cargó.");
+            }
+
+            delegacionesGeoJSON = delegacionesData;
+            if(!delegacionesLayerGroup) {
+                delegacionesLayerGroup = L.geoJSON(delegacionesGeoJSON, {
+                    style: { color: '#00796b', weight: 2, fillColor: '#009688', fillOpacity: 0.3 },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${props.nom || 'Delegación Municipal'}</b><br>Dirección: ${props.dir || '-'}<br>Teléfono: ${props.num || '-'}`;
+                        if (props.obs) content += `<br>Obs: ${props.obs}`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...delegacionesGeoJSON.features].sort((a,b) => 
+                (a.properties.nom || "").localeCompare(b.properties.nom || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.nom || 'Delegación Sin Nombre';
+                const dir = props.dir || 'Sin dirección';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    delegacionesLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if(!isDelegacionesVisible) {
+                        // Clear all others first to ensure "uno por uno"
+                        delegacionesLayerGroup.eachLayer(l => {
+                            if (map.hasLayer(l) && l !== targetLayer) {
+                                map.removeLayer(l);
+                            }
+                        });
+                        document.querySelectorAll('#delegaciones-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+
+                        if (!map.hasLayer(targetLayer)) {
+                            map.addLayer(targetLayer);
+                            item.classList.add('active');
+                            zoomADelegacion(feature);
+                        } else {
+                            map.removeLayer(targetLayer);
+                            item.classList.remove('active');
+                        }
+                    } else {
+                        zoomADelegacion(feature);
+                    }
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando delegaciones:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
+    function initEscuelas() {
+        const listDiv = document.getElementById('escuelas-list');
+        try {
+            if(typeof escuelasData === 'undefined') {
+                throw new Error("El archivo escuelas.js no se cargó.");
+            }
+
+            escuelasGeoJSON = escuelasData;
+            if(!escuelasLayerGroup) {
+                escuelasLayerGroup = L.geoJSON(escuelasGeoJSON, {
+                    style: { color: '#303f9f', weight: 2, fillColor: '#3f51b5', fillOpacity: 0.3 },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${props.nom || 'Establecimiento Educativo'}</b><br>Dirección: ${props.dir || '-'}`;
+                        if (props.adm) content += `<br>Director/Adm: ${props.adm}`;
+                        if (props.mat) content += `<br>Matrícula: ${props.mat}`;
+                        if (props.cue) content += `<br>CUE: ${props.cue}`;
+                        if (props.num) content += `<br>Teléfono: ${props.num}`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...escuelasGeoJSON.features].sort((a,b) => 
+                (a.properties.nom || "").localeCompare(b.properties.nom || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.nom || 'Escuela Sin Nombre';
+                const dir = props.dir || 'Sin dirección';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    escuelasLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if(!isEscuelasVisible) {
+                        // Clear all others first to ensure "uno por uno"
+                        escuelasLayerGroup.eachLayer(l => {
+                            if (map.hasLayer(l) && l !== targetLayer) {
+                                map.removeLayer(l);
+                            }
+                        });
+                        document.querySelectorAll('#escuelas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+
+                        if (!map.hasLayer(targetLayer)) {
+                            map.addLayer(targetLayer);
+                            item.classList.add('active');
+                            zoomAEscuela(feature);
+                        } else {
+                            map.removeLayer(targetLayer);
+                            item.classList.remove('active');
+                        }
+                    } else {
+                        zoomAEscuela(feature);
+                    }
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando escuelas:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
+    function toggleDropdown(capa) {
+        const list = document.getElementById(capa + '-list');
+        const chev = document.getElementById(capa + '-chevron');
+        if (list && chev) {
+            list.classList.toggle('open');
+            if(list.classList.contains('open')) {
+                chev.classList.replace('fa-chevron-right', 'fa-chevron-down');
+            } else {
+                chev.classList.replace('fa-chevron-down', 'fa-chevron-right');
+            }
+        }
+    }
+
+    function toggleLayer(capa) {
+        if(capa === 'barrios') {
+            const btn = document.getElementById('barrios-btn');
+            const icon = document.getElementById('barrios-visibility');
+            isBarriosVisible = !isBarriosVisible;
+            
+            if(isBarriosVisible) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+                
+
+                if(barriosLayerGroup) barriosLayerGroup.addTo(map);
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+                
+                if(barriosLayerGroup) map.removeLayer(barriosLayerGroup);
+                document.querySelectorAll('#barrios-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+            }
+        } else if(capa === 'centros') {
+            const btn = document.getElementById('centros-btn');
+            const icon = document.getElementById('centros-visibility');
+            isCentrosVisible = !isCentrosVisible;
+            
+            if(isCentrosVisible) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+                
+
+                if(centrosLayerGroup) centrosLayerGroup.addTo(map);
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+                
+                if(centrosLayerGroup) map.removeLayer(centrosLayerGroup);
+                document.querySelectorAll('#centros-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+            }
+        } else if(capa === 'comedores') {
+            const btn = document.getElementById('comedores-btn');
+            const icon = document.getElementById('comedores-visibility');
+            isComedoresVisible = !isComedoresVisible;
+            
+            if(isComedoresVisible) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+                
+
+                if(comedoresLayerGroup) comedoresLayerGroup.addTo(map);
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+                
+                if(comedoresLayerGroup) map.removeLayer(comedoresLayerGroup);
+                document.querySelectorAll('#comedores-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+            }
+        } else if(capa === 'deportivos') {
+            const btn = document.getElementById('deportivos-btn');
+            const icon = document.getElementById('deportivos-visibility');
+            isDeportivosVisible = !isDeportivosVisible;
+            
+            if(isDeportivosVisible) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+                
+                if(!deportivosLayerGroup && deportivosGeoJSON) {
+                    deportivosLayerGroup = L.geoJSON(deportivosGeoJSON, {
+                        style: { color: '#1976d2', weight: 2, fillColor: '#2196f3', fillOpacity: 0.3 },
+                        onEachFeature: (feature, layer) => {
+                            const props = feature.properties;
+                            const center = getLayerCenter(layer);
+                            let content = `<b>${props.Name || 'Establecimiento Deportivo'}</b><br>Dirección: ${props.dir || '-'}`;
+                            if (center) {
+                                content += `<br><a href="#" onclick="event.preventDefault(); abrirRuta(${center.lat}, ${center.lng})" style="display:inline-block; margin-top:8px; color:#2e7d32; font-weight:bold; text-decoration:none;"><i class="fas fa-route"></i> Cómo llegar</a>`;
+                            }
+                            layer.bindPopup(content);
+                        }
+                    });
+                }
+                if(deportivosLayerGroup) deportivosLayerGroup.addTo(map);
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+                
+                if(deportivosLayerGroup) map.removeLayer(deportivosLayerGroup);
+                document.querySelectorAll('#deportivos-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+            }
+        } else if(capa === 'respuesta') {
+            const btn = document.getElementById('respuesta-btn');
+            const icon = document.getElementById('respuesta-visibility');
+            isRespuestaVisible = !isRespuestaVisible;
+            
+            if(isRespuestaVisible) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+                
+                if(!respuestaLayerGroup && respuestaGeoJSON) {
+                    respuestaLayerGroup = L.geoJSON(respuestaGeoJSON, {
+                        style: { color: '#8e24aa', weight: 2, fillColor: '#9c27b0', fillOpacity: 0.3 },
+                        onEachFeature: (feature, layer) => {
+                            const props = feature.properties;
+                            const center = getLayerCenter(layer);
+                            let content = `<b>${props.nom || 'Respuesta Primaria'}</b><br>Dirección: ${props.dir || '-'}<br>Tipo: ${props.tip || '-'}`;
+                            if (center) {
+                                content += `<br><a href="#" onclick="event.preventDefault(); abrirRuta(${center.lat}, ${center.lng})" style="display:inline-block; margin-top:8px; color:#2e7d32; font-weight:bold; text-decoration:none;"><i class="fas fa-route"></i> Cómo llegar</a>`;
+                            }
+                            layer.bindPopup(content);
+                        }
+                    });
+                }
+                if(respuestaLayerGroup) respuestaLayerGroup.addTo(map);
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+                
+                if(respuestaLayerGroup) map.removeLayer(respuestaLayerGroup);
+                document.querySelectorAll('#respuesta-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+            }
+        } else if(capa === 'delegaciones') {
+            const btn = document.getElementById('delegaciones-btn');
+            const icon = document.getElementById('delegaciones-visibility');
+            isDelegacionesVisible = !isDelegacionesVisible;
+            
+            if(isDelegacionesVisible) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+                
+                if(delegacionesLayerGroup) delegacionesLayerGroup.addTo(map);
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+                
+                if(delegacionesLayerGroup) map.removeLayer(delegacionesLayerGroup);
+                document.querySelectorAll('#delegaciones-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+            }
+        } else if(capa === 'escuelas') {
+            const btn = document.getElementById('escuelas-btn');
+            const icon = document.getElementById('escuelas-visibility');
+            isEscuelasVisible = !isEscuelasVisible;
+            
+            if(isEscuelasVisible) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+                
+                if(escuelasLayerGroup) escuelasLayerGroup.addTo(map);
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+                
+                if(escuelasLayerGroup) map.removeLayer(escuelasLayerGroup);
+                document.querySelectorAll('#escuelas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+            }
+        }
+    }
+
+    function zoomABarrio(featureBuscar) {
+        if(!barriosLayerGroup) return;
+        barriosLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
+                layer.openPopup();
+            }
+        });
+    }
+
+    function zoomACentro(featureBuscar) {
+        if(!centrosLayerGroup) return;
+        centrosLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
+                layer.openPopup();
+            }
+        });
+    }
+
+    function zoomAComedor(featureBuscar) {
+        if(!comedoresLayerGroup) return;
+        comedoresLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.setView(layer.getLatLng(), 16);
+                layer.openPopup();
+            }
+        });
+    }
+
+    function zoomADeportivo(featureBuscar) {
+        if(!deportivosLayerGroup) return;
+        deportivosLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
+                layer.openPopup();
+            }
+        });
+    }
+
+    function zoomARespuesta(featureBuscar) {
+        if(!respuestaLayerGroup) return;
+        respuestaLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
+                layer.openPopup();
+            }
+        });
+    }
+
+    function zoomADelegacion(featureBuscar) {
+        if(!delegacionesLayerGroup) return;
+        delegacionesLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
+                layer.openPopup();
+            }
+        });
+    }
+
+    function zoomAEscuela(featureBuscar) {
+        if(!escuelasLayerGroup) return;
+        escuelasLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
+                layer.openPopup();
+            }
+        });
+    }
+
+    function handleGlobalSearch(e) {
+        const query = e.target.value.toLowerCase().trim();
+        const resultsContainer = document.getElementById('global-search-results');
+        
+        if (query.length < 2) {
+            resultsContainer.style.display = 'none';
+            return;
+        }
+
+        const matches = [];
+
+        if (barriosGeoJSON) {
+            barriosGeoJSON.features.forEach(f => {
+                if (f.properties.nom && f.properties.nom.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'barrios', feature: f, title: f.properties.nom, type: 'Barrio Proceso APELL' });
+                }
+            });
+        }
+        if (centrosGeoJSON) {
+            centrosGeoJSON.features.forEach(f => {
+                if (f.properties.nom && f.properties.nom.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'centros', feature: f, title: f.properties.nom, type: 'Centro de Evacuados' });
+                }
+            });
+        }
+        if (comedoresGeoJSON) {
+            comedoresGeoJSON.features.forEach(f => {
+                if (f.properties.Nombre && f.properties.Nombre.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'comedores', feature: f, title: f.properties.Nombre, type: 'Comedor Comunitario' });
+                }
+            });
+        }
+        if (deportivosGeoJSON) {
+            deportivosGeoJSON.features.forEach(f => {
+                if (f.properties.Name && f.properties.Name.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'deportivos', feature: f, title: f.properties.Name, type: 'Establecimiento Deportivo' });
+                }
+            });
+        }
+        if (respuestaGeoJSON) {
+            respuestaGeoJSON.features.forEach(f => {
+                if (f.properties.nom && f.properties.nom.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'respuesta', feature: f, title: f.properties.nom, type: 'Respuesta Primaria' });
+                }
+            });
+        }
+        if (delegacionesGeoJSON) {
+            delegacionesGeoJSON.features.forEach(f => {
+                if (f.properties.nom && f.properties.nom.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'delegaciones', feature: f, title: f.properties.nom, type: 'Delegación Municipal' });
+                }
+            });
+        }
+        if (escuelasGeoJSON) {
+            escuelasGeoJSON.features.forEach(f => {
+                if (f.properties.nom && f.properties.nom.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'escuelas', feature: f, title: f.properties.nom, type: 'Establecimiento Educativo' });
+                }
+            });
+        }
+
+        if (matches.length > 0) {
+            resultsContainer.innerHTML = '';
+            matches.slice(0, 15).forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'global-search-item';
+                item.innerHTML = `<span class="global-search-title">${m.title}</span><span class="global-search-type">${m.type}</span>`;
+                item.onclick = () => {
+                    resultsContainer.style.display = 'none';
+                    e.target.value = '';
+                    
+                    if (m.layer === 'barrios' && !isBarriosVisible) toggleLayer('barrios');
+                    if (m.layer === 'centros' && !isCentrosVisible) toggleLayer('centros');
+                    if (m.layer === 'comedores' && !isComedoresVisible) toggleLayer('comedores');
+                    if (m.layer === 'deportivos' && !isDeportivosVisible) toggleLayer('deportivos');
+                    if (m.layer === 'respuesta' && !isRespuestaVisible) toggleLayer('respuesta');
+                    if (m.layer === 'delegaciones' && !isDelegacionesVisible) toggleLayer('delegaciones');
+                    if (m.layer === 'escuelas' && !isEscuelasVisible) toggleLayer('escuelas');
+
+                    setTimeout(() => {
+                        if (m.layer === 'barrios') zoomABarrio(m.feature);
+                        if (m.layer === 'centros') zoomACentro(m.feature);
+                        if (m.layer === 'comedores') zoomAComedor(m.feature);
+                        if (m.layer === 'deportivos') zoomADeportivo(m.feature);
+                        if (m.layer === 'respuesta') zoomARespuesta(m.feature);
+                        if (m.layer === 'delegaciones') zoomADelegacion(m.feature);
+                        if (m.layer === 'escuelas') zoomAEscuela(m.feature);
+                    }, 100);
+                };
+                resultsContainer.appendChild(item);
+            });
+            resultsContainer.style.display = 'flex';
+        } else {
+            resultsContainer.innerHTML = '<div style="padding:15px;text-align:center;color:#999;font-size:0.9rem;">No se encontraron resultados</div>';
+            resultsContainer.style.display = 'flex';
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        if(!e.target.closest('.map-overlay-search') && !e.target.closest('.global-search-results')) {
+            const res = document.getElementById('global-search-results');
+            if(res) res.style.display = 'none';
+        }
+        if(!e.target.closest('.basemap-selector') && !e.target.closest('.fa-cube')) {
+            const basemapSelector = document.getElementById('basemap-selector');
+            if(basemapSelector) basemapSelector.classList.remove('active');
+        }
     });
 
-    // Helper: Call API & format JSON output
-    async function callApi(url, method = 'GET', bodyData = null) {
-      const outputEl = document.getElementById('api-output');
-      const latencyEl = document.getElementById('api-latency');
-      const statusEl = document.getElementById('api-status');
-
-      statusEl.textContent = 'Cargando...';
-      statusEl.style.background = '#333';
-      outputEl.innerHTML = '<span style="color:#888">// Enviando petición a ' + url + '...</span>';
-
-      const startTime = performance.now();
-
-      try {
-        const options = {
-          method: method,
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Custom-Client-Test': 'Vercel-Playground-UI'
-          }
-        };
-
-        if (bodyData && method !== 'GET') {
-          options.body = JSON.stringify(bodyData);
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+      setTimeout(() => {
+        if (typeof map !== 'undefined' && map) {
+          map.invalidateSize();
         }
+      }, 320);
+    }
 
-        const res = await fetch(url, options);
-        const endTime = performance.now();
-        const duration = Math.round(endTime - startTime);
+    // Auto-colapsar sidebar en pantallas móviles al cargar
+    if (window.innerWidth <= 768) {
+      document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) sidebar.classList.add('collapsed');
+      });
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.classList.add('collapsed');
+    }
 
-        latencyEl.textContent = `HTTP Status: ${res.status} | Latencia: ${duration}ms`;
-
-        let data;
-        const contentType = res.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          data = await res.json();
-        } else {
-          data = await res.text();
-        }
-
-        statusEl.textContent = '200 OK';
-        statusEl.style.background = 'rgba(0, 230, 118, 0.2)';
-        statusEl.style.color = '#00e676';
-
-        outputEl.innerHTML = syntaxHighlightJson(data);
-
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = 'Error API';
-        statusEl.style.background = 'rgba(255, 0, 128, 0.2)';
-        statusEl.style.color = '#ff0080';
-        latencyEl.textContent = 'Petición Fallida';
-        outputEl.innerHTML = `<span style="color:#ff0080">Error al llamar a ${url}:</span>\n${err.message}\n\nNota: Si estás abriendo el archivo index.html directamente con doble clic (file://), ejecuta un servidor HTTP como "npx serve ." o despliega en Vercel.`;
+    // Observador y eventos para forzar recalculo del tamaño del mapa Leaflet
+    if (typeof ResizeObserver !== 'undefined') {
+      const mapContainer = document.getElementById('map');
+      if (mapContainer) {
+        new ResizeObserver(() => {
+          if (typeof map !== 'undefined' && map) map.invalidateSize();
+        }).observe(mapContainer);
       }
     }
 
-    // Helper: Fetch Geo Data
-    async function fetchGeoData() {
-      try {
-        const res = await fetch('/api/geo');
-        if (!res.ok) throw new Error('API Geo error');
-        const data = await res.json();
+    window.addEventListener('resize', () => {
+      if (typeof map !== 'undefined' && map) map.invalidateSize();
+    });
 
-        document.getElementById('geo-country').textContent = data.geolocation.country || 'N/A';
-        document.getElementById('geo-city').textContent = data.geolocation.city || 'N/A';
-        document.getElementById('geo-region').textContent = data.geolocation.executionRegion || data.vercelNetwork.executionRegion || 'dev-local';
-        document.getElementById('geo-ip').textContent = data.geolocation.ip || '127.0.0.1';
-        document.getElementById('edge-region-tag').textContent = data.vercelNetwork.executionRegion || 'dev-local';
-      } catch (e) {
-        document.getElementById('geo-country').textContent = 'Local Host';
-        document.getElementById('geo-city').textContent = 'Localhost';
-        document.getElementById('geo-region').textContent = 'dev-local';
-        document.getElementById('geo-ip').textContent = '127.0.0.1';
-      }
-    }
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        if (typeof map !== 'undefined' && map) map.invalidateSize();
+      }, 200);
+    });
 
-    // Helper: JSON Syntax Highlighter
-    function syntaxHighlightJson(json) {
-      if (typeof json !== 'string') {
-        json = JSON.stringify(json, null, 2);
-      }
-      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-        let cls = 'json-number';
-        if (/^"/.test(match)) {
-          if (/:$/.test(match)) {
-            cls = 'json-key';
-          } else {
-            cls = 'json-string';
-          }
-        } else if (/true|false/.test(match)) {
-          cls = 'json-boolean';
-        } else if (/null/.test(match)) {
-          cls = 'json-boolean';
+    function filterLayers(query) {
+      const q = query.toLowerCase().trim();
+      document.querySelectorAll('.layer-item').forEach(item => {
+        const name = item.querySelector('.layer-name');
+        if (!name) return;
+        const match = !q || name.textContent.toLowerCase().includes(q);
+        item.style.display = match ? '' : 'none';
+        // Also hide/show its associated sub-layer list
+        const id = item.id ? item.id.replace('-btn', '') : null;
+        if (id) {
+          const subList = document.getElementById(id + '-list');
+          if (subList) subList.style.display = match ? '' : 'none';
         }
-        return '<span class="' + cls + '">' + match + '</span>';
       });
     }
 
-    // Copy helper
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text);
-      alert('¡Comando copiado al portapapeles: ' + text + '!');
+    initBarrios();
+    initCentros();
+    initComedores();
+    initDeportivos();
+    initRespuesta();
+    initDelegaciones();
+    initEscuelas();
+
+    // --- NUEVAS FUNCIONALIDADES: GEOLOCALIZACIÓN, RUTAS Y SIMULACIÓN DE VIENTO ---
+
+    let userLocation = null;
+    let locationMarker = null;
+    let locationCircle = null;
+
+    // 1. GEOLOCALIZACIÓN
+    function localizarUsuario() {
+        map.locate({ setView: true, maxZoom: 16 });
     }
+
+    map.on('locationfound', function(e) {
+        userLocation = e.latlng;
+        
+        if (locationMarker) {
+            map.removeLayer(locationMarker);
+        }
+        if (locationCircle) {
+            map.removeLayer(locationCircle);
+        }
+
+        locationMarker = L.circleMarker(e.latlng, {
+            radius: 8,
+            fillColor: "#0288d1",
+            color: "#fff",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+        }).addTo(map).bindPopup("Tu ubicación actual");
+
+        locationCircle = L.circle(e.latlng, e.accuracy, {
+            color: "#0288d1",
+            fillColor: "#0288d1",
+            fillOpacity: 0.15,
+            weight: 1
+        }).addTo(map);
+
+        // Calcular ruta pendiente si la hubiera
+        if (pendingRouteDestination) {
+            calcularRuta(userLocation, pendingRouteDestination);
+            pendingRouteDestination = null;
+        }
+    });
+
+    map.on('locationerror', function(e) {
+        alert("No se pudo obtener tu ubicación. Por favor, asegurate de dar permisos de geolocalización al navegador.");
+    });
+
+    // 2. RUTAS (OSM NATIVO EN EL MAPA + ORIGEN PERSONALIZADO)
+    let currentRouteLine = null;
+    let pendingRouteDestination = null;
+    let isPickingCustomOrigin = false;
+    let customOriginLatLng = null;
+    let customOriginMarker = null;
+    let pendingCustomOriginDestination = null;
+    let activeRouteDestination = null;
+
+    function toggleCustomOriginPickMode(forceState) {
+        if (typeof forceState === 'boolean') {
+            isPickingCustomOrigin = forceState;
+        } else {
+            isPickingCustomOrigin = !isPickingCustomOrigin;
+        }
+
+        const btn = document.getElementById('custom-origin-toggle-btn');
+        const btnText = document.getElementById('custom-origin-btn-text');
+        const mapContainer = map.getContainer();
+
+        if (isPickingCustomOrigin) {
+            btn.style.background = '#e65100';
+            btn.style.color = '#ffffff';
+            btn.style.borderColor = '#e65100';
+            if (btnText) btnText.innerText = 'Hacé clic en el mapa...';
+            mapContainer.style.cursor = 'crosshair';
+        } else {
+            btn.style.background = '#fff3e0';
+            btn.style.color = '#e65100';
+            btn.style.borderColor = '#ffb74d';
+            if (btnText) btnText.innerText = customOriginLatLng ? 'Cambiar Origen en Mapa' : 'Activar Origen en Mapa';
+            mapContainer.style.cursor = '';
+        }
+    }
+
+    map.on('click', function(e) {
+        if (isPickingCustomOrigin) {
+            setCustomOrigin(e.latlng);
+        }
+    });
+
+    function setCustomOrigin(latlng) {
+        customOriginLatLng = latlng;
+
+        const originIcon = L.divIcon({
+            className: 'custom-origin-pin-icon',
+            html: `<div style="background-color: #ff5722; width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #ffffff; box-shadow: 0 3px 8px rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center;"><i class="fas fa-flag" style="transform: rotate(45deg); color: white; font-size: 12px;"></i></div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 28],
+            popupAnchor: [0, -28]
+        });
+
+        if (customOriginMarker) {
+            customOriginMarker.setLatLng(latlng);
+        } else {
+            customOriginMarker = L.marker(latlng, {
+                icon: originIcon,
+                draggable: true,
+                title: "Punto de Origen Seleccionado"
+            }).addTo(map);
+
+            customOriginMarker.bindPopup("<b>📍 Punto de Origen Seleccionado</b><br>Arrastrá este marcador para cambiar la posición del origen.").openPopup();
+
+            customOriginMarker.on('dragend', function(e) {
+                customOriginLatLng = e.target.getLatLng();
+                updateCustomOriginUI();
+                if (activeRouteDestination) {
+                    calcularRuta(customOriginLatLng, activeRouteDestination, "Origen Personalizado");
+                }
+            });
+        }
+
+        updateCustomOriginUI();
+        toggleCustomOriginPickMode(false);
+
+        if (pendingCustomOriginDestination) {
+            const dest = pendingCustomOriginDestination;
+            pendingCustomOriginDestination = null;
+            calcularRuta(customOriginLatLng, dest, "Origen Personalizado");
+        }
+    }
+
+    function updateCustomOriginUI() {
+        const statusBox = document.getElementById('custom-origin-status-box');
+        const statusText = document.getElementById('custom-origin-status-text');
+        const btnText = document.getElementById('custom-origin-btn-text');
+
+        if (customOriginLatLng) {
+            if (statusBox) statusBox.style.display = 'block';
+            if (statusText) statusText.innerText = `Origen: Lat ${customOriginLatLng.lat.toFixed(4)}, Lng ${customOriginLatLng.lng.toFixed(4)}`;
+            if (btnText) btnText.innerText = 'Cambiar Origen en Mapa';
+        } else {
+            if (statusBox) statusBox.style.display = 'none';
+            if (btnText) btnText.innerText = 'Activar Origen en Mapa';
+        }
+    }
+
+    function quitarPuntoOrigen() {
+        if (customOriginMarker) {
+            map.removeLayer(customOriginMarker);
+            customOriginMarker = null;
+        }
+        customOriginLatLng = null;
+        updateCustomOriginUI();
+        toggleCustomOriginPickMode(false);
+    }
+
+    function abrirRuta(destLat, destLng) {
+        const destination = { lat: destLat, lng: destLng };
+        if (!userLocation) {
+            pendingRouteDestination = destination;
+            alert("Activando GPS para detectar tu ubicación y calcular la ruta...");
+            localizarUsuario();
+        } else {
+            calcularRuta(userLocation, destination, "GPS");
+        }
+    }
+
+    function abrirRutaDesdePuntoPuntual(destLat, destLng) {
+        const destination = { lat: destLat, lng: destLng };
+        if (!customOriginLatLng) {
+            pendingCustomOriginDestination = destination;
+            alert("Seleccioná un punto de origen en el mapa.\n\nHacé clic en cualquier lugar del mapa para fijar tu origen.");
+            toggleCustomOriginPickMode(true);
+        } else {
+            calcularRuta(customOriginLatLng, destination, "Origen Personalizado");
+        }
+    }
+
+    function formatDuration(seconds) {
+        if (!seconds || isNaN(seconds)) return '-- min';
+        const totalMinutes = Math.round(seconds / 60);
+        if (totalMinutes < 60) {
+            return `${totalMinutes} min`;
+        }
+        const hours = Math.floor(totalMinutes / 60);
+        const mins = totalMinutes % 60;
+        return mins > 0 ? `${hours} h ${mins} min` : `${hours} h`;
+    }
+
+    function calcularRuta(origin, destination, originLabel) {
+        activeRouteDestination = destination;
+        const start = `${origin.lng},${origin.lat}`;
+        const end = `${destination.lng},${destination.lat}`;
+        const drivingUrl = `https://router.project-osrm.org/route/v1/driving/${start};${end}?overview=full&geometries=geojson`;
+
+        document.getElementById('route-distance').innerText = 'Calculando...';
+        document.getElementById('route-duration-car').innerText = '-- min';
+        document.getElementById('route-duration-walk').innerText = '-- min';
+        document.getElementById('route-panel').style.display = 'block';
+
+        const routeTitle = document.getElementById('route-panel-title');
+        if (routeTitle) {
+            routeTitle.innerText = originLabel ? `Ruta (${originLabel})` : 'Ruta de Evacuación';
+        }
+
+        fetch(drivingUrl)
+            .then(res => res.json())
+            .then(data => {
+                if (data.routes && data.routes.length > 0) {
+                    const route = data.routes[0];
+                    const distanceMeters = route.distance;
+                    const distanceKm = (distanceMeters / 1000).toFixed(1);
+
+                    // Tiempo en auto (proveniente del servidor de OSRM vehicular)
+                    const carDurationSeconds = route.duration;
+                    const carDurationStr = formatDuration(carDurationSeconds);
+
+                    // Tiempo caminando (calculado a velocidad peatonal de 4.5 km/h = 75 m/min)
+                    const walkMinutes = Math.max(1, Math.round(distanceMeters / 75));
+                    const walkDurationStr = formatDuration(walkMinutes * 60);
+
+                    if (currentRouteLine) {
+                        map.removeLayer(currentRouteLine);
+                    }
+
+                    currentRouteLine = L.geoJSON(route.geometry, {
+                        style: {
+                            color: originLabel === "Origen Personalizado" ? "#ff6f00" : "#0288d1",
+                            weight: 6,
+                            opacity: 0.85
+                        }
+                    }).addTo(map);
+
+                    map.fitBounds(currentRouteLine.getBounds(), { padding: [50, 50] });
+
+                    document.getElementById('route-distance').innerText = `${distanceKm} km`;
+                    document.getElementById('route-duration-car').innerText = carDurationStr;
+                    document.getElementById('route-duration-walk').innerText = walkDurationStr;
+                } else {
+                    alert("No se pudo calcular una ruta entre el origen y este punto.");
+                }
+            })
+            .catch(err => {
+                console.error("Error al calcular ruta:", err);
+                // Fallback: Distancia geodésica local en línea recta
+                const p1 = L.latLng(origin.lat, origin.lng);
+                const p2 = L.latLng(destination.lat, destination.lng);
+                const distMeters = p1.distanceTo(p2);
+                const distKm = (distMeters / 1000).toFixed(1);
+
+                const carMins = Math.max(1, Math.round((distMeters / 1000 / 30) * 60)); // 30 km/h en auto
+                const walkMins = Math.max(1, Math.round(distMeters / 75)); // 4.5 km/h caminando
+
+                document.getElementById('route-distance').innerText = `${distKm} km (línea recta)`;
+                document.getElementById('route-duration-car').innerText = formatDuration(carMins * 60);
+                document.getElementById('route-duration-walk').innerText = formatDuration(walkMins * 60);
+            });
+    }
+
+    function borrarRuta() {
+        if (currentRouteLine) {
+            map.removeLayer(currentRouteLine);
+            currentRouteLine = null;
+        }
+        document.getElementById('route-panel').style.display = 'none';
+    }
+
+    function getLayerCenter(layer) {
+        if (typeof layer.getLatLng === 'function') {
+            return layer.getLatLng();
+        } else if (typeof layer.getBounds === 'function') {
+            return layer.getBounds().getCenter();
+        }
+        return null;
+    }
+
+    // 3. CLIMA Y SIMULACIÓN DE PLUMA
+    let currentWindDirection = 0; // grados
+    let currentWindSpeed = 10;    // km/h
+    let isPlumeSimActive = false;
+    let plumeMarker = null;
+    let plumePolygon = null;
+
+    async function fetchWeatherData() {
+        // Intentar primero con Open-Meteo
+        try {
+            console.log("Intentando obtener clima desde Open-Meteo...");
+            const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-38.7833&longitude=-62.2667&current=wind_speed_10m,wind_direction_10m");
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            const data = await res.json();
+            if (data && data.current) {
+                currentWindSpeed = Math.round(data.current.wind_speed_10m);
+                currentWindDirection = data.current.wind_direction_10m;
+                
+                // Actualizar interfaz
+                updateWeatherUI(currentWindSpeed, currentWindDirection, false);
+                return;
+            }
+            throw new Error("Respuesta de API Open-Meteo inválida");
+        } catch (e) {
+            console.warn("Open-Meteo falló. Intentando alternativa con wttr.in...", e);
+            
+            // Intentar con wttr.in como alternativa de respaldo en tiempo real
+            try {
+                const res = await fetch("https://wttr.in/Bahia+Blanca?format=j1");
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                const data = await res.json();
+                if (data && data.current_condition && data.current_condition.length > 0) {
+                    const current = data.current_condition[0];
+                    currentWindSpeed = Math.round(parseFloat(current.windspeedKmph));
+                    currentWindDirection = parseInt(current.winddirDegree);
+                    
+                    updateWeatherUI(currentWindSpeed, currentWindDirection, false);
+                    return;
+                }
+                throw new Error("Respuesta de wttr.in inválida");
+            } catch (err2) {
+                console.error("Ambos servicios de clima fallaron. Usando valores predeterminados:", err2);
+                
+                // Fallback final predeterminado
+                currentWindDirection = 45;
+                currentWindSpeed = 15;
+                updateWeatherUI(currentWindSpeed, currentWindDirection, true);
+            }
+        }
+    }
+
+    function updateWeatherUI(speed, direction, isDefault) {
+        document.getElementById('wind-speed-text').innerText = `${speed} km/h`;
+        document.getElementById('wind-arrow').style.transform = `rotate(${direction}deg)`;
+        
+        // Convertir dirección numérica a puntos cardinales para el texto
+        const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSO", "SO", "OSO", "O", "Oeste", "NO", "NNO"];
+        const index = Math.round(((direction % 360) / 22.5));
+        const cardinal = directions[index % 16];
+        
+        const suffix = isDefault ? " (Predeterminado)" : "";
+        document.getElementById('wind-dir-text').innerText = `${cardinal} (${direction}°)${suffix}`;
+        
+        // Sincronizar los controles deslizantes
+        document.getElementById('sim-wind-dir').value = direction;
+        document.getElementById('sim-wind-speed').value = speed;
+        document.getElementById('sim-dir-val').innerText = `${direction}°`;
+        document.getElementById('sim-speed-val').innerText = `${speed} km/h`;
+    }
+
+    // Función para calcular puntos de destino (geodésicos simplificados para Leaflet)
+    function getDestinationPoint(latlng, distanceMetres, bearingDegrees) {
+        const R = 6378137; // Radio de la tierra en metros
+        const d = distanceMetres / R;
+        const lat1 = latlng.lat * Math.PI / 180;
+        const lon1 = latlng.lng * Math.PI / 180;
+        const brng = bearingDegrees * Math.PI / 180;
+
+        const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) +
+                      Math.cos(lat1) * Math.sin(d) * Math.cos(brng));
+        const lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(d) * Math.cos(lat1),
+                              Math.cos(d) - Math.sin(lat1) * Math.sin(lat2));
+
+        return L.latLng(lat2 * 180 / Math.PI, lon2 * 180 / Math.PI);
+    }
+
+    // Generar cono de pluma de dispersión (arco de 35 grados simulando la dispersión del gas)
+    function calculatePlumePoints(origin, windDir, windSpeed) {
+        // La pluma viaja en la dirección opuesta al origen del viento (viento del Este sopla hacia el Oeste)
+        const blowDir = (windDir + 180) % 360;
+        const aperture = 35; // ángulo de apertura en grados
+        
+        // El largo de la pluma es proporcional a la velocidad del viento (200m por cada km/h, máx 20km)
+        const length = Math.min(windSpeed * 200, 20000); 
+        
+        const points = [origin];
+        const steps = 10;
+        
+        // Generamos puntos intermedios en el arco exterior para suavizar el cono
+        for (let i = 0; i <= steps; i++) {
+            const angle = blowDir - (aperture / 2) + (aperture * i / steps);
+            points.push(getDestinationPoint(origin, length, angle));
+        }
+        
+        return points;
+    }
+
+    function togglePlumeSimulation(active) {
+        isPlumeSimActive = active;
+        const controls = document.getElementById('plume-controls');
+        
+        if (active) {
+            controls.style.display = 'block';
+            
+            // Posicionar marcador de fuga inicial en el centro del Polo Petroquímico
+            const initialPos = L.latLng([-38.778, -62.285]);
+            
+            plumeMarker = L.marker(initialPos, {
+                draggable: true,
+                title: "Arrastrá para simular punto de escape",
+                alt: "Fuga Química"
+            }).addTo(map);
+            
+            plumeMarker.bindPopup("<b>⚠️ Fuga Química Simulada</b><br>Arrastrá este marcador para mover el origen del gas.").openPopup();
+            
+            plumeMarker.on('drag', updatePlume);
+            
+            updatePlume();
+        } else {
+            controls.style.display = 'none';
+            if (plumeMarker) {
+                map.removeLayer(plumeMarker);
+                plumeMarker = null;
+            }
+            if (plumePolygon) {
+                map.removeLayer(plumePolygon);
+                plumePolygon = null;
+            }
+        }
+    }
+
+    function updatePlume() {
+        if (!isPlumeSimActive || !plumeMarker) return;
+        
+        const origin = plumeMarker.getLatLng();
+        const dir = parseInt(document.getElementById('sim-wind-dir').value);
+        const speed = parseInt(document.getElementById('sim-wind-speed').value);
+        
+        const points = calculatePlumePoints(origin, dir, speed);
+        
+        if (plumePolygon) {
+            plumePolygon.setLatLngs(points);
+        } else {
+            plumePolygon = L.polygon(points, {
+                color: "#ff5722",
+                fillColor: "#ff7043",
+                fillOpacity: 0.45,
+                weight: 2,
+                dashArray: "5, 5"
+            }).addTo(map);
+            
+            plumePolygon.bindPopup("<b>Sector de Pluma de Dispersión de Gas</b><br>Zona de potencial riesgo por dirección del viento.");
+        }
+    }
+
+    function updatePlumeFromControls() {
+        const dir = document.getElementById('sim-wind-dir').value;
+        const speed = document.getElementById('sim-wind-speed').value;
+        
+        document.getElementById('sim-dir-val').innerText = `${dir}°`;
+        document.getElementById('sim-speed-val').innerText = `${speed} km/h`;
+        
+        updatePlume();
+    }
+
+    // Cargar clima al iniciar
+    fetchWeatherData();
   </script>
 </body>
 </html>
