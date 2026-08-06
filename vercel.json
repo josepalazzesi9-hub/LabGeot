@@ -1,0 +1,28 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" },
+        { "key": "X-Custom-Vercel-Header", "value": "Vercel-Playground-Active" }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/vercel-docs",
+      "destination": "https://vercel.com/docs",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/ping",
+      "destination": "/api/time"
+    }
+  ]
+}

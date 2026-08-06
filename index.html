@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vercel Features Playground & Testing Suite</title>
+  <meta name="description" content="Playground interactivo para probar Vercel Serverless Functions, Edge Headers, vercel.json y Variables de Entorno.">
+  <link rel="icon" type="image/svg+xml" href="./public/vercel-icon.svg">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #000000;
+      --bg-card: #0a0a0a;
+      --bg-card-hover: #121212;
+      --border-color: rgba(255, 255, 255, 0.14);
+      --border-glow: rgba(255, 255, 255, 0.25);
+      
+      --text-main: #ededed;
+      --text-muted: #888888;
+      --text-subtle: #555555;
+      
+      --accent-white: #ffffff;
+      --accent-cyan: #50e3c2;
+      --accent-blue: #0070f3;
+      --accent-purple: #7928ca;
+      --accent-pink: #ff0080;
+      --accent-green: #00e676;
+      --accent-warning: #f5a623;
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(121, 40, 202, 0.15), transparent 40%),
+        radial-gradient(circle at 90% 20%, rgba(0, 112, 243, 0.1), transparent 30%);
+    }
+
+    /* Ambient Header Glow */
+    .header-glow {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 1200px;
+      height: 180px;
+      background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.08), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Header Nav */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--accent-white);
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+
+    .vercel-logo-svg {
+      width: 24px;
+      height: 24px;
+      fill: #ffffff;
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+      transition: transform 0.3s ease;
+    }
+
+    .brand:hover .vercel-logo-svg {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .nav-badge {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; transform: scale(0.95); }
+      50% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 0.6; transform: scale(0.95); }
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+
+    .hero-title {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 1rem;
+      background: linear-gradient(180deg, #ffffff 0%, #a1a1a1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .tags-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: #111;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      transition: all 0.2s ease;
+    }
+
+    .tag:hover {
+      border-color: var(--accent-white);
+      color: var(--accent-white);
+    }
+
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .col-6 { grid-column: span 6; }
+    .col-12 { grid-column: span 12; }
+    .col-4 { grid-column: span 4; }
+
+    @media (max-width: 900px) {
+      .col-6, .col-4 { grid-column: span 12; }
+      .hero-title { font-size: 2.2rem; }
+    }
+
+    /* Card Component */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.75rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      border-color: var(--border-glow);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--accent-white);
+    }
+
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .btn {
+      background: var(--accent-white);
+      color: #000;
+      border: none;
+      padding: 0.6rem 1.1rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover {
+      background: #ccc;
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--accent-white);
+      color: var(--accent-white);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--accent-cyan);
+      border: 1px solid rgba(80, 227, 194, 0.4);
+    }
+
+    .btn-outline:hover {
+      background: rgba(80, 227, 194, 0.1);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* Terminal / Code Viewer */
+    .console-viewer {
+      background: #000;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.83rem;
+      color: #a9b7c6;
+      max-height: 280px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .console-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .console-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+
+    .json-key { color: #50e3c2; }
+    .json-string { color: #ce9178; }
+    .json-number { color: #b5cea8; }
+    .json-boolean { color: #569cd6; }
+
+    /* Geo Cards Grid */
+    .geo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .geo-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.85rem;
+      text-align: center;
+    }
+
+    .geo-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .geo-val {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent-white);
+      word-break: break-all;
+    }
+
+    /* Checklist */
+    .checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      padding: 0.6rem 0.8rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 6px;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .checklist-item:hover {
+      border-color: var(--border-color);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .checklist-icon {
+      color: var(--accent-green);
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    /* Code snippet box */
+    .code-block {
+      background: #050505;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      color: var(--accent-white);
+      border-color: var(--accent-white);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-subtle);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: var(--accent-white);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-glow"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="nav-container">
+      <a href="#" class="brand">
+        <svg class="vercel-logo-svg" viewBox="0 0 512 512">
+          <path d="M256 48L496 464H16L256 48Z" />
+        </svg>
+        <span>Vercel Playground</span>
+      </a>
+
+      <div class="nav-badge">
+        <span class="status-dot"></span>
+        <span id="env-badge">Modo: Local / Vercel Ready</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1 class="hero-title">Vercel Testing Suite</h1>
+      <p class="hero-subtitle">
+        Repositorio interactivo de pruebas para experimentar con Vercel Serverless Functions, Edge Headers, reglas de <code>vercel.json</code> y Variables de Entorno.
+      </p>
+      <div class="tags-row">
+        <span class="tag">🚀 Serverless API</span>
+        <span class="tag">🌍 Edge Geolocation</span>
+        <span class="tag">⚙️ vercel.json</span>
+        <span class="tag">🔐 Environment Variables</span>
+        <span class="tag">📦 Zero Config</span>
+      </div>
+    </section>
+
+    <!-- Grid of Tests -->
+    <div class="grid">
+
+      <!-- Test 1: Serverless API Functions -->
+      <div class="card col-6">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon">⚡</div>
+            <div>
+              <h2 class="card-title">Serverless API Routes</h2>
+              <p class="card-desc" style="margin-bottom:0">Prueba ejecuciones backend en <code>/api/*</code></p>
+            </div>
+          </div>
+          <span id="api-status" class="tag">Listo</span>
+        </div>
+
+        <p class="card-desc">
+          En Vercel, cualquier archivo dentro de la carpeta <code>/api</code> se convierte automáticamente en una función Serverless sin configuración adicional.
+        </p>
+
+        <div class="btn-group">
+          <button class="btn" onclick="callApi('/api/time', 'GET')">
+            <span>GET /api/time</span>
+          </button>
+          <button class="btn btn-secondary" onclick="callApi('/api/geo', 'GET')">
+            <span>GET /api/geo</span>
+          </button>
+          <button class="btn btn-outline" onclick="callApi('/api/echo', 'POST', { testPayload: 'Hola Vercel', date: new Date().toISOString() })">
+            <span>POST /api/echo</span>
+          </button>
+        </div>
+
+        <div class="console-viewer">
+          <div class="console-topbar">
+            <div class="console-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <span id="api-latency">HTTP Status: - | Latencia: -</span>
+          </div>
+          <pre id="api-output">// Haz clic en uno de los botones de arriba para hacer un request a la API</pre>
+        </div>
+      </div>
+
+      <!-- Test 2: Edge Geolocation & Headers -->
+      <div class="card col-6">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon">🌐</div>
+            <div>
+              <h2 class="card-title">Vercel Edge Geolocation</h2>
+              <p class="card-desc" style="margin-bottom:0">Inspección de cabeceras inyectadas por la red Edge</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="card-desc">
+          Cuando despliegas en Vercel, la red Edge inyecta cabeceras como <code>x-vercel-ip-country</code> y <code>x-vercel-ip-city</code> en cada petición.
+        </p>
+
+        <div class="geo-grid">
+          <div class="geo-item">
+            <div class="geo-label">País</div>
+            <div class="geo-val" id="geo-country">Esperando...</div>
+          </div>
+          <div class="geo-item">
+            <div class="geo-label">Ciudad</div>
+            <div class="geo-val" id="geo-city">Esperando...</div>
+          </div>
+          <div class="geo-item">
+            <div class="geo-label">Región Vercel</div>
+            <div class="geo-val" id="geo-region">Esperando...</div>
+          </div>
+          <div class="geo-item">
+            <div class="geo-label">IP Cliente</div>
+            <div class="geo-val" id="geo-ip">Esperando...</div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="fetchGeoData()">
+            <span>🔄 Probar Geolocalización Edge</span>
+          </button>
+        </div>
+
+        <div class="code-block" style="margin-top:auto">
+          <span>x-vercel-execution-region</span>
+          <span id="edge-region-tag" style="color:#aaa">dev-local</span>
+        </div>
+      </div>
+
+      <!-- Test 3: vercel.json Configuration -->
+      <div class="card col-6">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon">⚙️</div>
+            <div>
+              <h2 class="card-title">Configuración <code>vercel.json</code></h2>
+              <p class="card-desc" style="margin-bottom:0">Redirecciones, Rewrites y Custom Headers</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="card-desc">
+          El archivo <code>vercel.json</code> te permite personalizar rutas, cabeceras CORS y redirecciones del sitio.
+        </p>
+
+        <div class="checklist">
+          <div class="checklist-item">
+            <span class="checklist-icon">✓</span>
+            <div>
+              <strong>Rewrite <code>/ping</code></strong>
+              <div style="font-size:0.8rem; color:var(--text-muted)">Redirige internamente <code>/ping</code> a <code>/api/time</code></div>
+            </div>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-icon">✓</span>
+            <div>
+              <strong>Redirect <code>/vercel-docs</code></strong>
+              <div style="font-size:0.8rem; color:var(--text-muted)">Redirección HTTP 302 a la documentación oficial</div>
+            </div>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-icon">✓</span>
+            <div>
+              <strong>Custom Header</strong>
+              <div style="font-size:0.8rem; color:var(--text-muted)">Inyecta <code>X-Custom-Vercel-Header</code> en la API</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group" style="margin-top:1.25rem">
+          <button class="btn btn-secondary" onclick="callApi('/ping', 'GET')">
+            <span>Probar Rewrite /ping</span>
+          </button>
+          <a href="/vercel-docs" target="_blank" class="btn btn-outline" style="text-decoration:none">
+            <span>Probar Redirect /vercel-docs ↗</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Test 4: Pass & Deployment Checklist -->
+      <div class="card col-6">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon">🚀</div>
+            <div>
+              <h2 class="card-title">Pasos para Desplegar en Vercel</h2>
+              <p class="card-desc" style="margin-bottom:0">Cómo publicar este repo en la nube</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="card-desc">
+          Sigue estos pasos sencillos para conectar tu repositorio local con Vercel:
+        </p>
+
+        <div class="checklist">
+          <div class="checklist-item">
+            <span class="checklist-icon">1</span>
+            <div>Subir este repositorio a GitHub (ej: <code>git push origin main</code>).</div>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-icon">2</span>
+            <div>Ingresar a <a href="https://vercel.com/new" target="_blank" style="color:var(--accent-cyan)">vercel.com/new</a> y seleccionar el repositorio.</div>
+          </div>
+          <div class="checklist-item">
+            <span class="checklist-icon">3</span>
+            <div>Hacer clic en <strong>Deploy</strong> (Vercel detectará el proyecto de forma automática).</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.25rem">
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.3rem">O despliega directamente con Vercel CLI:</div>
+          <div class="code-block">
+            <code id="cli-cmd">npx vercel</code>
+            <button class="copy-btn" onclick="copyToClipboard('npx vercel')">Copiar</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>Vercel Playground - Creado para pruebas de Serverless Functions, Edge Network y Configuración Vercel.</p>
+  </footer>
+
+  <!-- Interactive Logic -->
+  <script>
+    // Detect environment on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const isVercelHost = window.location.hostname.includes('vercel.app');
+      const badge = document.getElementById('env-badge');
+      if (isVercelHost) {
+        badge.textContent = 'En Vivo en Vercel Edge 🚀';
+        badge.style.color = '#50e3c2';
+      } else {
+        badge.textContent = 'Modo Local / Listo para Vercel';
+      }
+
+      // Auto-fetch geo data on load
+      fetchGeoData();
+    });
+
+    // Helper: Call API & format JSON output
+    async function callApi(url, method = 'GET', bodyData = null) {
+      const outputEl = document.getElementById('api-output');
+      const latencyEl = document.getElementById('api-latency');
+      const statusEl = document.getElementById('api-status');
+
+      statusEl.textContent = 'Cargando...';
+      statusEl.style.background = '#333';
+      outputEl.innerHTML = '<span style="color:#888">// Enviando petición a ' + url + '...</span>';
+
+      const startTime = performance.now();
+
+      try {
+        const options = {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Custom-Client-Test': 'Vercel-Playground-UI'
+          }
+        };
+
+        if (bodyData && method !== 'GET') {
+          options.body = JSON.stringify(bodyData);
+        }
+
+        const res = await fetch(url, options);
+        const endTime = performance.now();
+        const duration = Math.round(endTime - startTime);
+
+        latencyEl.textContent = `HTTP Status: ${res.status} | Latencia: ${duration}ms`;
+
+        let data;
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          data = await res.text();
+        }
+
+        statusEl.textContent = '200 OK';
+        statusEl.style.background = 'rgba(0, 230, 118, 0.2)';
+        statusEl.style.color = '#00e676';
+
+        outputEl.innerHTML = syntaxHighlightJson(data);
+
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Error API';
+        statusEl.style.background = 'rgba(255, 0, 128, 0.2)';
+        statusEl.style.color = '#ff0080';
+        latencyEl.textContent = 'Petición Fallida';
+        outputEl.innerHTML = `<span style="color:#ff0080">Error al llamar a ${url}:</span>\n${err.message}\n\nNota: Si estás abriendo el archivo index.html directamente con doble clic (file://), ejecuta un servidor HTTP como "npx serve ." o despliega en Vercel.`;
+      }
+    }
+
+    // Helper: Fetch Geo Data
+    async function fetchGeoData() {
+      try {
+        const res = await fetch('/api/geo');
+        if (!res.ok) throw new Error('API Geo error');
+        const data = await res.json();
+
+        document.getElementById('geo-country').textContent = data.geolocation.country || 'N/A';
+        document.getElementById('geo-city').textContent = data.geolocation.city || 'N/A';
+        document.getElementById('geo-region').textContent = data.geolocation.executionRegion || data.vercelNetwork.executionRegion || 'dev-local';
+        document.getElementById('geo-ip').textContent = data.geolocation.ip || '127.0.0.1';
+        document.getElementById('edge-region-tag').textContent = data.vercelNetwork.executionRegion || 'dev-local';
+      } catch (e) {
+        document.getElementById('geo-country').textContent = 'Local Host';
+        document.getElementById('geo-city').textContent = 'Localhost';
+        document.getElementById('geo-region').textContent = 'dev-local';
+        document.getElementById('geo-ip').textContent = '127.0.0.1';
+      }
+    }
+
+    // Helper: JSON Syntax Highlighter
+    function syntaxHighlightJson(json) {
+      if (typeof json !== 'string') {
+        json = JSON.stringify(json, null, 2);
+      }
+      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'json-key';
+          } else {
+            cls = 'json-string';
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+          cls = 'json-boolean';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+    }
+
+    // Copy helper
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text);
+      alert('¡Comando copiado al portapapeles: ' + text + '!');
+    }
+  </script>
+</body>
+</html>
