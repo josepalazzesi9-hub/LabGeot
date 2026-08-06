@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="MapAPELL — Portal de descargas de capas geoespaciales (GeoJSON) del Proceso APELL Bahía Blanca.">
+  <meta property="og:title" content="Portal de Descargas | MapAPELL">
+  <meta property="og:description" content="Descargá las capas geoespaciales (GeoJSON) de barrios, centros de evacuados, comedores comunitarios y respuesta primaria.">
+  <meta property="og:image" content="logo.png">
+  <meta property="og:type" content="website">
+  <title>Portal de Descargas | MapAPELL</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #1b8142;
+      --secondary-color: #2e7d32;
+      --accent-color: #e8f5e9;
+      --text-main: #333;
+      --text-muted: #666;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7f9;
+      color: var(--text-main);
+    }
+    header {
+      background: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .header-buttons {
+      display: flex;
+      gap: 15px;
+    }
+    .btn-outline {
+      padding: 8px 20px;
+      border: 2px solid var(--primary-color);
+      border-radius: 6px;
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    .btn-outline:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+    .hero {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      padding: 60px 20px;
+      text-align: center;
+    }
+    .hero h1 {
+      margin: 0 0 15px 0;
+      font-size: 2.5rem;
+    }
+    .hero p {
+      margin: 0;
+      font-size: 1.1rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 25px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      transition: transform 0.3s, box-shadow 0.3s;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .card-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      background: var(--accent-color);
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin: 0 0 10px 0;
+    }
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      flex: 1;
+    }
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #999;
+      margin-bottom: 20px;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
+    }
+    .download-btn {
+      display: block;
+      width: 100%;
+      padding: 12px 0;
+      background: var(--primary-color);
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: background 0.3s;
+      box-sizing: border-box;
+    }
+    .download-btn:hover {
+      background: var(--secondary-color);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="https://www.apellbahiablanca.org.ar/" target="_blank" class="logo"><img src="logo.png" alt="APELL Bahía Blanca" style="height: 50px; object-fit: contain;"></a>
+    <div class="header-buttons">
+      <a href="conversor.html" class="btn-outline" style="margin-right: 10px;"><i class="fas fa-exchange-alt" style="margin-right: 8px;"></i>Conversor GeoJSON</a>
+      <a href="index.html" class="btn-outline"><i class="fas fa-map-marked-alt" style="margin-right: 8px;"></i>Volver al Visor</a>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h1>Portal de Descargas APELL</h1>
+    <p>Accedé a los archivos geoespaciales (GeoJSON) del Proceso APELL Bahía Blanca para utilizarlos en tus propios proyectos de análisis territorial y respuesta a emergencias.</p>
+  </div>
+
+  <div class="container">
+    <div class="grid">
+      
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-map-marked-alt"></i></div>
+        <h2 class="card-title">Barrios Proceso APELL</h2>
+        <p class="card-desc">Polígonos que delimitan las áreas barriales involucradas dentro del radio de acción del Polo Petroquímico.</p>
+        <div class="card-meta">
+          <span><i class="fas fa-file-code"></i> GeoJSON</span>
+          <span><i class="fas fa-weight-hanging"></i> 4.7 KB</span>
+        </div>
+        <a href="data/BARRIOS_PROCESO_APELL.json" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar Archivo</a>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-hands-helping"></i></div>
+        <h2 class="card-title">Centros de Evacuados</h2>
+        <p class="card-desc">Ubicaciones designadas como refugios y centros de concentración para evacuación durante emergencias.</p>
+        <div class="card-meta">
+          <span><i class="fas fa-file-code"></i> GeoJSON</span>
+          <span><i class="fas fa-weight-hanging"></i> 6.2 KB</span>
+        </div>
+        <a href="data/Centro de evacuados - Digitalización.json" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar Archivo</a>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-utensils"></i></div>
+        <h2 class="card-title">Comedores Comunitarios</h2>
+        <p class="card-desc">Puntos de asistencia alimentaria y apoyo logístico para la comunidad y equipos de respuesta.</p>
+        <div class="card-meta">
+          <span><i class="fas fa-file-code"></i> GeoJSON</span>
+          <span><i class="fas fa-weight-hanging"></i> 19.6 KB</span>
+        </div>
+        <a href="data/comedores_com.json" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar Archivo</a>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-futbol"></i></div>
+        <h2 class="card-title">Establecimientos Deportivos</h2>
+        <p class="card-desc">Clubes e instalaciones que sirven como zonas de concentración masiva o helipuertos temporales.</p>
+        <div class="card-meta">
+          <span><i class="fas fa-file-code"></i> GeoJSON</span>
+          <span><i class="fas fa-weight-hanging"></i> 3.6 KB</span>
+        </div>
+        <a href="data/Estab_deportivos.json" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar Archivo</a>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
+        <h2 class="card-title">Respuesta Primaria</h2>
+        <p class="card-desc">Bases operativas de fuerzas de seguridad, bomberos, defensa civil y atención médica.</p>
+        <div class="card-meta">
+          <span><i class="fas fa-file-code"></i> GeoJSON</span>
+          <span><i class="fas fa-weight-hanging"></i> 7.6 KB</span>
+        </div>
+        <a href="data/Sistema de respuesta primaria - Digitalización.json" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar Archivo</a>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-landmark"></i></div>
+        <h2 class="card-title">Delegaciones Municipales</h2>
+        <p class="card-desc">Polígonos que representan las áreas administrativas de las delegaciones municipales del partido de Bahía Blanca.</p>
+        <div class="card-meta">
+          <span><i class="fas fa-file-code"></i> GeoJSON</span>
+          <span><i class="fas fa-weight-hanging"></i> 17.2 KB</span>
+        </div>
+        <a href="data/Delegaciones_municipales_partido_Bahia_Blanca.geojson" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar Archivo</a>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-school"></i></div>
+        <h2 class="card-title">Establecimientos Educativos</h2>
+        <p class="card-desc">Polígonos de escuelas, colegios y jardines de infantes digitalizados para la planificación preventiva.</p>
+        <div class="card-meta">
+          <span><i class="fas fa-file-code"></i> GeoJSON</span>
+          <span><i class="fas fa-weight-hanging"></i> 13.0 KB</span>
+        </div>
+        <a href="data/Escuelas - Digitalización.geojson" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar Archivo</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="data/barrios.js?v=2"></script>
+  <script src="data/centros.js?v=2"></script>
+  <script src="data/comedores.js?v=2"></script>
+  <script src="data/deportivos.js?v=2"></script>
+  <script src="data/respuesta.js?v=2"></script>
+  <script src="data/delegaciones.js?v=2"></script>
+  <script src="data/escuelas.js?v=2"></script>
+  <script>
+    // Función para descargar un objeto como archivo JSON
+    function descargarJSON(data, filename) {
+      try {
+        const jsonString = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Error al generar la descarga:", error);
+      }
+    }
+
+    // Configuración de los botones de descarga con sus respectivos datos JS y nombres de archivo
+    const descargas = [
+      { selector: 'a[href*="BARRIOS_PROCESO_APELL.json"]', data: typeof barriosData !== 'undefined' ? barriosData : null, filename: 'BARRIOS_PROCESO_APELL.json' },
+      { selector: 'a[href*="Centro de evacuados"]', data: typeof centrosData !== 'undefined' ? centrosData : null, filename: 'Centro de evacuados - Digitalización.json' },
+      { selector: 'a[href*="comedores_com.json"]', data: typeof comedoresData !== 'undefined' ? comedoresData : null, filename: 'comedores_com.json' },
+      { selector: 'a[href*="Estab_deportivos.json"]', data: typeof deportivosData !== 'undefined' ? deportivosData : null, filename: 'Estab_deportivos.json' },
+      { selector: 'a[href*="Sistema de respuesta primaria"]', data: typeof respuestaData !== 'undefined' ? respuestaData : null, filename: 'Sistema de respuesta primaria - Digitalización.json' },
+      { selector: 'a[href*="Delegaciones_municipales"]', data: typeof delegacionesData !== 'undefined' ? delegacionesData : null, filename: 'Delegaciones_municipales_partido_Bahia_Blanca.geojson' },
+      { selector: 'a[href*="Escuelas"]', data: typeof escuelasData !== 'undefined' ? escuelasData : null, filename: 'Escuelas - Digitalización.geojson' }
+    ];
+
+    descargas.forEach(item => {
+      const btn = document.querySelector(item.selector);
+      if (btn) {
+        btn.addEventListener('click', function(e) {
+          if (item.data) {
+            e.preventDefault();
+            descargarJSON(item.data, item.filename);
+          } else {
+            console.warn("Los datos en memoria para " + item.filename + " no están disponibles. Intentando descarga directa.");
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+

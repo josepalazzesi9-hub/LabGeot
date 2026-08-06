@@ -1,61 +1,67 @@
-# 🚀 Vercel Features Playground & Testing Suite
+# MapAPELL — Visor Geoespacial APELL Bahía Blanca
 
-Un repositorio ligero, moderno e interactivo diseñado para experimentar y aprender cómo funcionan las características clave de **Vercel** (Serverless Functions, Edge Headers, `vercel.json` y Variables de Entorno).
+[![Proceso APELL](https://img.shields.io/badge/APELL-Bahía%20Blanca-2e7d32)](https://web.client/index.html)
 
----
+**MapAPELL** es un visor cartográfico interactivo desarrollado para el **Proceso APELL Bahía Blanca** (Awareness and Preparedness for Emergencies at Local Level). Permite consultar, visualizar y descargar capas geoespaciales relacionadas con la gestión del riesgo y la respuesta ante emergencias en el área del Polo Petroquímico de Bahía Blanca.
 
-## 🌟 ¿Qué incluye este repositorio?
+## 🗺️ Funcionalidades
 
-1. **⚡ Serverless Functions (`/api/*`)**:
-   - `api/time.js`: Retorna el timestamp del servidor, zona horaria y datos de la instancia Vercel.
-   - `api/geo.js`: Lee las cabeceras HTTP que la red Edge de Vercel inyecta automáticamente (`x-vercel-ip-country`, `x-vercel-ip-city`, `x-vercel-execution-region`).
-   - `api/echo.js`: Recibe solicitudes `POST`/`GET` con JSON y responde analizando el payload.
+- Visualización de capas GeoJSON sobre mapa interactivo (Leaflet.js)
+- Cinco capas temáticas:
+  - **Barrios Proceso APELL** — Polígonos de los barrios del área de influencia
+  - **Centros de Evacuados** — Refugios y puntos de concentración durante emergencias
+  - **Comedores Comunitarios** — Puntos de asistencia alimentaria
+  - **Establecimientos Deportivos** — Clubes e instalaciones como zonas de concentración masiva
+  - **Respuesta Primaria** — Bomberos, policía, defensa civil y atención médica
+- Búsqueda global por nombre de ubicación
+- Filtro de capas en el panel lateral
+- Selector de mapa base (Carto Light, OSM, Google Streets, Google Satélite)
+- Portal de descargas en formato GeoJSON
 
-2. **⚙️ Configuración Vercel (`vercel.json`)**:
-   - Demuestra el uso de **Rewrites** (ej. `/ping` redirige internamente a `/api/time`).
-   - Demuestra el uso de **Redirects** (ej. `/vercel-docs` redirige a la documentación).
-   - Inyección de **Headers CORS y personalizados** (`X-Custom-Vercel-Header`).
+## 📁 Estructura
 
-3. **🖥️ Dashboard Interactivo (`index.html`)**:
-   - Interfaz web con diseño oscuro al estilo Vercel (*Vercel Dark Mode*) para ejecutar pruebas con un clic y visualizar las respuestas JSON en tiempo real con sintaxis resaltada y tiempos de latencia.
-
----
-
-## 🚀 Cómo desplegar en Vercel (Paso a Paso)
-
-### Opción 1: Desde GitHub (Recomendada)
-1. Crea un nuevo repositorio en tu cuenta de GitHub (ejemplo: `pruebas-vercel`).
-2. Sube el código local ejecutando los siguientes comandos en tu terminal:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial Vercel Playground commit"
-   git branch -M main
-   git remote add origin https://github.com/TU_USUARIO/pruebas-vercel.git
-   git push -u origin main
-   ```
-3. Entra a [Vercel Import Dashboard](https://vercel.com/new).
-4. Selecciona tu repositorio `pruebas-vercel`.
-5. Haz clic en **Deploy**. ¡Vercel detectará la configuración automáticamente y te entregará una URL publica HTTPS en segundos!
-
----
-
-### Opción 2: Usando Vercel CLI (Línea de Comandos)
-Si tienes instalado Node.js o el CLI de Vercel:
-```bash
-npx vercel
 ```
-Sigue las instrucciones en la pantalla para enlazar con tu cuenta de Vercel y desplegar directamente desde la consola.
+web/client/
+├── index.html          # Visor principal del mapa
+├── descargas.html      # Portal de descargas de capas
+└── data/
+    ├── barrios.js      # Datos GeoJSON - Barrios APELL (EPSG:3857)
+    ├── centros.js      # Datos GeoJSON - Centros de evacuados (EPSG:4326)
+    ├── comedores.js    # Datos GeoJSON - Comedores comunitarios (EPSG:4326)
+    ├── deportivos.js   # Datos GeoJSON - Establecimientos deportivos (EPSG:3857)
+    ├── respuesta.js    # Datos GeoJSON - Respuesta primaria (EPSG:4326)
+    └── *.json          # Archivos GeoJSON originales para descarga
+```
 
----
+## 🚀 Uso
 
-## 🧪 Pruebas que puedes realizar una vez desplegado
+El proyecto es completamente estático (HTML + JS + CSS). Para ejecutarlo localmente:
 
-* **Ver tu ubicación según la CDN Edge de Vercel**: Presiona el botón *"Probar Geolocalización Edge"* en el dashboard para ver tu país y ciudad detectados por las cabeceras de Vercel.
-* **Probar APIs Serverless**: Haz clic en `GET /api/time` o `POST /api/echo` para verificar las respuestas Serverless.
-* **Probar Rewrites**: Ingresa a `TU_DOMINIO_VERCEL.app/ping` en tu navegador para comprobar cómo `vercel.json` reescribe la ruta sin cambiar la URL.
+```bash
+# Con Python
+python -m http.server 8080
 
----
+# Con Node.js
+npx serve .
+
+# O simplemente abrí index.html en tu navegador
+```
+
+Para publicarlo en la web, bastará con subir la carpeta `web/client/` a cualquier servicio de hosting estático (GitHub Pages, Netlify, Vercel, etc.).
+
+## 🛠️ Tecnologías
+
+- [Leaflet.js](https://leafletjs.com/) v1.9.4 — Librería de mapas interactivos
+- [Proj4js](https://proj4js.org/) v2.9.0 — Transformación de proyecciones cartográficas
+- [Font Awesome](https://fontawesome.com/) 6.4.0 — Iconografía
+- [Google Fonts](https://fonts.google.com/) — Tipografía (Roboto)
+
+## 📦 Datos
+
+Los datos geoespaciales son producidos y mantenidos por el **Laboratorio de Geotecnologías (LabGeot)** — Mateo Asensi y colaboradores.
+
+Las capas se proveen en formato GeoJSON y pueden descargarse libremente desde el [Portal de Descargas](web/client/descargas.html).
 
 ## 📄 Licencia
-MIT - Siéntete libre de modificar este código para tus propios proyectos.
+
+Datos y código © Proceso APELL Bahía Blanca / LabGeot. Uso libre con atribución.
