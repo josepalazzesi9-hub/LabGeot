@@ -1,19 +1,18 @@
 {
-  "name": "pruebas-vercel-playground",
+  "name": "labgeot",
   "version": "1.0.0",
-  "description": "Playground interactivo para probar Serverless Functions, Edge Headers, vercel.json y despliegues en Vercel.",
-  "main": "index.html",
+  "description": "Visor Geoespacial MapAPELL para LabGEOT en Vercel",
+  "main": "web/client/index.html",
   "scripts": {
-    "start": "npx serve .",
-    "vercel-build": "echo 'Vercel build script executed successfully'"
+    "start": "npx serve web/client",
+    "dev": "npx serve web/client -l 3000"
   },
   "keywords": [
+    "labgeot",
+    "mapapell",
     "vercel",
-    "serverless",
-    "edge-functions",
-    "playground",
-    "api-routes"
+    "gis"
   ],
-  "author": "",
+  "author": "LabGEOT",
   "license": "MIT"
 }
