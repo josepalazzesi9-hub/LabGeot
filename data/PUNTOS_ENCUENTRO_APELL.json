@@ -1,0 +1,5 @@
+{"type":"FeatureCollection", "features": [
+{"type":"Feature","geometry":{"type":"Point","coordinates":[-6931866.811331291,-4688164.993722803]},"properties":{"id":1,"direc":"Punto de encuentro","ins":"Av. Dasso 2868"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[-6930001.879822436,-4688872.461306038]},"properties":{"id":2,"direc":"Punto de encuentro","ins":"RN 3 km 683,5"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[-6931355.767697354,-4690710.22217818]},"properties":{"id":3,"direc":"Punto de encuentro","ins":"Avenida San Martin 3619"}}
+]}

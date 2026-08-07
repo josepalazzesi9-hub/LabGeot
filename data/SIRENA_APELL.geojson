@@ -1,0 +1,4 @@
+{"type":"FeatureCollection", "features":[
+{"type":"Feature","id":1,"geometry":{"type":"Point","coordinates":[-6931893.2471090155,-4689328.368962534]},"properties":{"Direc":"Lautaro 2700","Inst":"Compus Scout Ernesto Pilling"}},
+{"type":"Feature","id":2,"geometry":{"type":"Point","coordinates":[-6932326.835409374,-4689213.053671921]},"properties":{"Direc":"Avenida Dasso 3475","Inst":"NULLCentro de Formación Profesional 401"}}
+]}

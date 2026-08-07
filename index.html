@@ -535,6 +535,46 @@
         <div class="sub-layers" id="escuelas-list">
             <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
         </div>
+
+        <div class="layer-item" id="empresas-btn" onclick="toggleDropdown('empresas')">
+            <i class="fas fa-chevron-right" id="empresas-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-industry"></i>
+            <span class="layer-name">Empresas polo petroquimico</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="empresas-visibility" onclick="event.stopPropagation(); toggleLayer('empresas')"></i>
+        </div>
+        <div class="sub-layers" id="empresas-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+
+        <div class="layer-item" id="mangas-btn" onclick="toggleDropdown('mangas')">
+            <i class="fas fa-chevron-right" id="mangas-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-wind"></i>
+            <span class="layer-name">Mangas de Viento</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="mangas-visibility" onclick="event.stopPropagation(); toggleLayer('mangas')"></i>
+        </div>
+        <div class="sub-layers" id="mangas-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+
+        <div class="layer-item" id="puntos-btn" onclick="toggleDropdown('puntos')">
+            <i class="fas fa-chevron-right" id="puntos-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-users"></i>
+            <span class="layer-name">Puntos de Encuentro</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="puntos-visibility" onclick="event.stopPropagation(); toggleLayer('puntos')"></i>
+        </div>
+        <div class="sub-layers" id="puntos-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+
+        <div class="layer-item" id="sirenas-btn" onclick="toggleDropdown('sirenas')">
+            <i class="fas fa-chevron-right" id="sirenas-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-bullhorn"></i>
+            <span class="layer-name">Sirenas comunitarias</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="sirenas-visibility" onclick="event.stopPropagation(); toggleLayer('sirenas')"></i>
+        </div>
+        <div class="sub-layers" id="sirenas-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
       </div>
       
       <!-- Custom Origin Selection Widget -->
@@ -553,10 +593,10 @@
         </div>
       </div>
 
-      <!-- Weather and Simulation Widget -->
+      <!-- Weather and Wind Simulation Widget -->
       <div class="simulation-widget" style="padding: 15px; border-top: 1px solid #ddd; background: #fafafa;">
         <span style="font-weight: bold; font-size: 0.95rem; color: #333; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-          <i class="fas fa-wind" style="color: #2e7d32;"></i> Clima y Fuga Química
+          <i class="fas fa-wind" style="color: #2e7d32;"></i> Clima y Dirección del Viento
         </span>
         <div id="weather-info" style="font-size: 0.85rem; color: #555; margin-bottom: 12px; display: flex; align-items: center; gap: 15px;">
           <div><i class="fas fa-location-arrow" id="wind-arrow" style="transition: transform 0.5s; display: inline-block;"></i> <span id="wind-dir-text">Cargando viento...</span></div>
@@ -565,8 +605,8 @@
         
         <div style="margin-bottom: 12px;">
           <label style="font-size: 0.85rem; font-weight: bold; color: #555; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox" id="plume-toggle" onchange="togglePlumeSimulation(this.checked)" style="cursor: pointer;">
-            Simular Fuga de Gas
+            <input type="checkbox" id="plume-toggle" onchange="toggleWindSimulation(this.checked)" style="cursor: pointer;">
+            Simular Viento en Mangas
           </label>
         </div>
         
@@ -586,7 +626,7 @@
             <input type="range" id="sim-wind-speed" min="5" max="100" value="20" oninput="updatePlumeFromControls()" style="width: 100%;">
           </div>
           <div style="font-size: 0.75rem; color: #888; font-style: italic;">
-            * Arrastrá el marcador ⚠️ en el mapa para simular la fuga en otro punto.
+            * Muestra la dirección y proyección del viento desde las mangas instaladas.
           </div>
         </div>
       </div>
@@ -659,6 +699,10 @@
   <script src="data/respuesta.js?v=2"></script>
   <script src="data/delegaciones.js?v=2"></script>
   <script src="data/escuelas.js?v=2"></script>
+  <script src="data/empresas.js?v=2"></script>
+  <script src="data/mangas.js?v=2"></script>
+  <script src="data/puntos_encuentro.js?v=2"></script>
+  <script src="data/sirenas.js?v=2"></script>
   <script>
 
     const map = L.map('map', { zoomControl: false }).setView([-38.7833, -62.2667], 14);
@@ -732,6 +776,22 @@
     let escuelasGeoJSON = null;
     let escuelasLayerGroup = null;
     let isEscuelasVisible = false;
+
+    let empresasGeoJSON = null;
+    let empresasLayerGroup = null;
+    let isEmpresasVisible = false;
+
+    let mangasGeoJSON = null;
+    let mangasLayerGroup = null;
+    let isMangasVisible = false;
+
+    let puntosGeoJSON = null;
+    let puntosLayerGroup = null;
+    let isPuntosVisible = false;
+
+    let sirenasGeoJSON = null;
+    let sirenasLayerGroup = null;
+    let isSirenasVisible = false;
 
 
 
@@ -1253,6 +1313,293 @@
         }
     }
 
+    function createCustomIcon(faClass, bgColor) {
+        return L.divIcon({
+            className: 'custom-fa-icon-marker',
+            html: `<div style="background-color:${bgColor}; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#ffffff; box-shadow:0 2px 6px rgba(0,0,0,0.3); border:2px solid white; font-size:13px;"><i class="${faClass}"></i></div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            popupAnchor: [0, -15]
+        });
+    }
+
+    function initEmpresas() {
+        const listDiv = document.getElementById('empresas-list');
+        try {
+            if(typeof empresasData === 'undefined') {
+                throw new Error("El archivo empresas.js no se cargó.");
+            }
+
+            empresasGeoJSON = empresasData;
+            if(!empresasLayerGroup) {
+                empresasLayerGroup = L.geoJSON(empresasGeoJSON, {
+                    style: { color: '#c2185b', weight: 2, fillColor: '#d81b60', fillOpacity: 0.35 },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${props.Empresaa || 'Empresa Proceso APELL'}</b>`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...empresasGeoJSON.features].sort((a,b) => 
+                (a.properties.Empresaa || "").localeCompare(b.properties.Empresaa || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.Empresaa || 'Empresa Sin Nombre';
+                item.innerHTML = `<div>${nom}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    empresasLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if(!isEmpresasVisible) {
+                        empresasLayerGroup.eachLayer(l => {
+                            if (map.hasLayer(l) && l !== targetLayer) {
+                                map.removeLayer(l);
+                            }
+                        });
+                        document.querySelectorAll('#empresas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+
+                        if (!map.hasLayer(targetLayer)) {
+                            map.addLayer(targetLayer);
+                            item.classList.add('active');
+                            zoomAEmpresa(feature);
+                        } else {
+                            map.removeLayer(targetLayer);
+                            item.classList.remove('active');
+                        }
+                    } else {
+                        zoomAEmpresa(feature);
+                    }
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando empresas:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
+    function initMangas() {
+        const listDiv = document.getElementById('mangas-list');
+        try {
+            if(typeof mangasData === 'undefined') {
+                throw new Error("El archivo mangas.js no se cargó.");
+            }
+
+            mangasGeoJSON = mangasData;
+            if(!mangasLayerGroup) {
+                mangasLayerGroup = L.geoJSON(mangasGeoJSON, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.marker(latlng, { icon: createCustomIcon('fas fa-wind', '#0097a7') });
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${props.inst || 'Manga de Viento'}</b><br>Dirección: ${props.Dire || '-'}`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...mangasGeoJSON.features].sort((a,b) => 
+                (a.properties.inst || "").localeCompare(b.properties.inst || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.inst || 'Manga de Viento';
+                const dir = props.Dire || 'Sin dirección';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    mangasLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if(!isMangasVisible) {
+                        mangasLayerGroup.eachLayer(l => {
+                            if (map.hasLayer(l) && l !== targetLayer) {
+                                map.removeLayer(l);
+                            }
+                        });
+                        document.querySelectorAll('#mangas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+
+                        if (!map.hasLayer(targetLayer)) {
+                            map.addLayer(targetLayer);
+                            item.classList.add('active');
+                            zoomAManga(feature);
+                        } else {
+                            map.removeLayer(targetLayer);
+                            item.classList.remove('active');
+                        }
+                    } else {
+                        zoomAManga(feature);
+                    }
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando mangas de viento:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
+    function initPuntosEncuentro() {
+        const listDiv = document.getElementById('puntos-list');
+        try {
+            if(typeof puntosEncuentroData === 'undefined') {
+                throw new Error("El archivo puntos_encuentro.js no se cargó.");
+            }
+
+            puntosGeoJSON = puntosEncuentroData;
+            if(!puntosLayerGroup) {
+                puntosLayerGroup = L.geoJSON(puntosGeoJSON, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.marker(latlng, { icon: createCustomIcon('fas fa-users', '#f57c00') });
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${props.direc || 'Punto de Encuentro'}</b><br>Lugar / Dirección: ${props.ins || '-'}`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...puntosGeoJSON.features].sort((a,b) => 
+                (a.properties.ins || "").localeCompare(b.properties.ins || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.ins || 'Punto de Encuentro';
+                const dir = props.direc || '';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    puntosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if(!isPuntosVisible) {
+                        puntosLayerGroup.eachLayer(l => {
+                            if (map.hasLayer(l) && l !== targetLayer) {
+                                map.removeLayer(l);
+                            }
+                        });
+                        document.querySelectorAll('#puntos-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+
+                        if (!map.hasLayer(targetLayer)) {
+                            map.addLayer(targetLayer);
+                            item.classList.add('active');
+                            zoomAPunto(feature);
+                        } else {
+                            map.removeLayer(targetLayer);
+                            item.classList.remove('active');
+                        }
+                    } else {
+                        zoomAPunto(feature);
+                    }
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando puntos de encuentro:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
+    function initSirenas() {
+        const listDiv = document.getElementById('sirenas-list');
+        try {
+            if(typeof sirenasData === 'undefined') {
+                throw new Error("El archivo sirenas.js no se cargó.");
+            }
+
+            sirenasGeoJSON = sirenasData;
+            if(!sirenasLayerGroup) {
+                sirenasLayerGroup = L.geoJSON(sirenasGeoJSON, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.marker(latlng, { icon: createCustomIcon('fas fa-bullhorn', '#d32f2f') });
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const center = getLayerCenter(layer);
+                        let content = `<b>Sirena APELL</b><br>Ubicación: ${props.Inst || '-'}<br>Dirección: ${props.Direc || '-'}`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...sirenasGeoJSON.features].sort((a,b) => 
+                (a.properties.Inst || "").localeCompare(b.properties.Inst || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.Inst || 'Sirena APELL';
+                const dir = props.Direc || 'Sin dirección';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    sirenasLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if(!isSirenasVisible) {
+                        sirenasLayerGroup.eachLayer(l => {
+                            if (map.hasLayer(l) && l !== targetLayer) {
+                                map.removeLayer(l);
+                            }
+                        });
+                        document.querySelectorAll('#sirenas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+
+                        if (!map.hasLayer(targetLayer)) {
+                            map.addLayer(targetLayer);
+                            item.classList.add('active');
+                            zoomASirena(feature);
+                        } else {
+                            map.removeLayer(targetLayer);
+                            item.classList.remove('active');
+                        }
+                    } else {
+                        zoomASirena(feature);
+                    }
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando sirenas:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
     function toggleDropdown(capa) {
         const list = document.getElementById(capa + '-list');
         const chev = document.getElementById(capa + '-chevron');
@@ -1431,6 +1778,74 @@
                 if(escuelasLayerGroup) map.removeLayer(escuelasLayerGroup);
                 document.querySelectorAll('#escuelas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
             }
+        } else if(capa === 'empresas') {
+            const btn = document.getElementById('empresas-btn');
+            const icon = document.getElementById('empresas-visibility');
+            isEmpresasVisible = !isEmpresasVisible;
+            
+            if(isEmpresasVisible) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+                if(empresasLayerGroup) empresasLayerGroup.addTo(map);
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+                if(empresasLayerGroup) map.removeLayer(empresasLayerGroup);
+                document.querySelectorAll('#empresas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+            }
+        } else if(capa === 'mangas') {
+            const btn = document.getElementById('mangas-btn');
+            const icon = document.getElementById('mangas-visibility');
+            isMangasVisible = !isMangasVisible;
+            
+            if(isMangasVisible) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+                if(mangasLayerGroup) mangasLayerGroup.addTo(map);
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+                if(mangasLayerGroup) map.removeLayer(mangasLayerGroup);
+                document.querySelectorAll('#mangas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+            }
+        } else if(capa === 'puntos') {
+            const btn = document.getElementById('puntos-btn');
+            const icon = document.getElementById('puntos-visibility');
+            isPuntosVisible = !isPuntosVisible;
+            
+            if(isPuntosVisible) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+                if(puntosLayerGroup) puntosLayerGroup.addTo(map);
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+                if(puntosLayerGroup) map.removeLayer(puntosLayerGroup);
+                document.querySelectorAll('#puntos-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+            }
+        } else if(capa === 'sirenas') {
+            const btn = document.getElementById('sirenas-btn');
+            const icon = document.getElementById('sirenas-visibility');
+            isSirenasVisible = !isSirenasVisible;
+            
+            if(isSirenasVisible) {
+                btn.classList.add('active');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+                if(sirenasLayerGroup) sirenasLayerGroup.addTo(map);
+            } else {
+                btn.classList.remove('active');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+                if(sirenasLayerGroup) map.removeLayer(sirenasLayerGroup);
+                document.querySelectorAll('#sirenas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+            }
         }
     }
 
@@ -1504,6 +1919,46 @@
         });
     }
 
+    function zoomAEmpresa(featureBuscar) {
+        if(!empresasLayerGroup) return;
+        empresasLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 16 });
+                layer.openPopup();
+            }
+        });
+    }
+
+    function zoomAManga(featureBuscar) {
+        if(!mangasLayerGroup) return;
+        mangasLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.setView(layer.getLatLng(), 16);
+                layer.openPopup();
+            }
+        });
+    }
+
+    function zoomAPunto(featureBuscar) {
+        if(!puntosLayerGroup) return;
+        puntosLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.setView(layer.getLatLng(), 16);
+                layer.openPopup();
+            }
+        });
+    }
+
+    function zoomASirena(featureBuscar) {
+        if(!sirenasLayerGroup) return;
+        sirenasLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.setView(layer.getLatLng(), 16);
+                layer.openPopup();
+            }
+        });
+    }
+
     function handleGlobalSearch(e) {
         const query = e.target.value.toLowerCase().trim();
         const resultsContainer = document.getElementById('global-search-results');
@@ -1564,6 +2019,35 @@
                 }
             });
         }
+        if (empresasGeoJSON) {
+            empresasGeoJSON.features.forEach(f => {
+                if (f.properties.Empresaa && f.properties.Empresaa.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'empresas', feature: f, title: f.properties.Empresaa, type: 'Empresas polo petroquimico' });
+                }
+            });
+        }
+        if (mangasGeoJSON) {
+            mangasGeoJSON.features.forEach(f => {
+                if (f.properties.inst && f.properties.inst.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'mangas', feature: f, title: f.properties.inst, type: 'Manga de Viento' });
+                }
+            });
+        }
+        if (puntosGeoJSON) {
+            puntosGeoJSON.features.forEach(f => {
+                if (f.properties.ins && f.properties.ins.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'puntos', feature: f, title: f.properties.ins, type: 'Punto de Encuentro' });
+                }
+            });
+        }
+        if (sirenasGeoJSON) {
+            sirenasGeoJSON.features.forEach(f => {
+                const title = f.properties.Inst || f.properties.Direc || 'Sirena comunitaria';
+                if (title.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'sirenas', feature: f, title: title, type: 'Sirenas comunitarias' });
+                }
+            });
+        }
 
         if (matches.length > 0) {
             resultsContainer.innerHTML = '';
@@ -1582,6 +2066,10 @@
                     if (m.layer === 'respuesta' && !isRespuestaVisible) toggleLayer('respuesta');
                     if (m.layer === 'delegaciones' && !isDelegacionesVisible) toggleLayer('delegaciones');
                     if (m.layer === 'escuelas' && !isEscuelasVisible) toggleLayer('escuelas');
+                    if (m.layer === 'empresas' && !isEmpresasVisible) toggleLayer('empresas');
+                    if (m.layer === 'mangas' && !isMangasVisible) toggleLayer('mangas');
+                    if (m.layer === 'puntos' && !isPuntosVisible) toggleLayer('puntos');
+                    if (m.layer === 'sirenas' && !isSirenasVisible) toggleLayer('sirenas');
 
                     setTimeout(() => {
                         if (m.layer === 'barrios') zoomABarrio(m.feature);
@@ -1591,6 +2079,10 @@
                         if (m.layer === 'respuesta') zoomARespuesta(m.feature);
                         if (m.layer === 'delegaciones') zoomADelegacion(m.feature);
                         if (m.layer === 'escuelas') zoomAEscuela(m.feature);
+                        if (m.layer === 'empresas') zoomAEmpresa(m.feature);
+                        if (m.layer === 'mangas') zoomAManga(m.feature);
+                        if (m.layer === 'puntos') zoomAPunto(m.feature);
+                        if (m.layer === 'sirenas') zoomASirena(m.feature);
                     }, 100);
                 };
                 resultsContainer.appendChild(item);
@@ -1676,6 +2168,10 @@
     initRespuesta();
     initDelegaciones();
     initEscuelas();
+    initEmpresas();
+    initMangas();
+    initPuntosEncuentro();
+    initSirenas();
 
     // --- NUEVAS FUNCIONALIDADES: GEOLOCALIZACIÓN, RUTAS Y SIMULACIÓN DE VIENTO ---
 
@@ -1952,12 +2448,11 @@
         return null;
     }
 
-    // 3. CLIMA Y SIMULACIÓN DE PLUMA
+    // 3. CLIMA Y SIMULACIÓN DE VIENTO EN MANGAS
     let currentWindDirection = 0; // grados
     let currentWindSpeed = 10;    // km/h
-    let isPlumeSimActive = false;
-    let plumeMarker = null;
-    let plumePolygon = null;
+    let isWindSimActive = false;
+    let windPolygonsLayerGroup = null;
 
     async function fetchWeatherData() {
         // Intentar primero con Open-Meteo
@@ -2042,19 +2537,18 @@
         return L.latLng(lat2 * 180 / Math.PI, lon2 * 180 / Math.PI);
     }
 
-    // Generar cono de pluma de dispersión (arco de 35 grados simulando la dispersión del gas)
+    // Generar cono de pluma/dirección de viento (arco de 35 grados)
     function calculatePlumePoints(origin, windDir, windSpeed) {
-        // La pluma viaja en la dirección opuesta al origen del viento (viento del Este sopla hacia el Oeste)
+        // La pluma viaja en la dirección hacia donde sopla el viento (viento del Este sopla hacia el Oeste)
         const blowDir = (windDir + 180) % 360;
         const aperture = 35; // ángulo de apertura en grados
         
-        // El largo de la pluma es proporcional a la velocidad del viento (200m por cada km/h, máx 20km)
-        const length = Math.min(windSpeed * 200, 20000); 
+        // El largo del cono es proporcional a la velocidad del viento (100m por cada km/h, máx 10km)
+        const length = Math.min(windSpeed * 100, 10000); 
         
         const points = [origin];
         const steps = 10;
         
-        // Generamos puntos intermedios en el arco exterior para suavizar el cono
         for (let i = 0; i <= steps; i++) {
             const angle = blowDir - (aperture / 2) + (aperture * i / steps);
             points.push(getDestinationPoint(origin, length, angle));
@@ -2063,62 +2557,60 @@
         return points;
     }
 
-    function togglePlumeSimulation(active) {
-        isPlumeSimActive = active;
+    function toggleWindSimulation(active) {
+        isWindSimActive = active;
         const controls = document.getElementById('plume-controls');
         
         if (active) {
             controls.style.display = 'block';
             
-            // Posicionar marcador de fuga inicial en el centro del Polo Petroquímico
-            const initialPos = L.latLng([-38.778, -62.285]);
+            // Si la capa de mangas de viento no está activa, encenderla automáticamente
+            if (!isMangasVisible) {
+                toggleLayer('mangas');
+            }
             
-            plumeMarker = L.marker(initialPos, {
-                draggable: true,
-                title: "Arrastrá para simular punto de escape",
-                alt: "Fuga Química"
-            }).addTo(map);
-            
-            plumeMarker.bindPopup("<b>⚠️ Fuga Química Simulada</b><br>Arrastrá este marcador para mover el origen del gas.").openPopup();
-            
-            plumeMarker.on('drag', updatePlume);
-            
-            updatePlume();
+            updateWindSimulation();
         } else {
             controls.style.display = 'none';
-            if (plumeMarker) {
-                map.removeLayer(plumeMarker);
-                plumeMarker = null;
-            }
-            if (plumePolygon) {
-                map.removeLayer(plumePolygon);
-                plumePolygon = null;
+            if (windPolygonsLayerGroup) {
+                map.removeLayer(windPolygonsLayerGroup);
+                windPolygonsLayerGroup = null;
             }
         }
     }
 
-    function updatePlume() {
-        if (!isPlumeSimActive || !plumeMarker) return;
+    function updateWindSimulation() {
+        if (!isWindSimActive || typeof mangasData === 'undefined' || !mangasData.features) return;
         
-        const origin = plumeMarker.getLatLng();
         const dir = parseInt(document.getElementById('sim-wind-dir').value);
         const speed = parseInt(document.getElementById('sim-wind-speed').value);
         
-        const points = calculatePlumePoints(origin, dir, speed);
-        
-        if (plumePolygon) {
-            plumePolygon.setLatLngs(points);
-        } else {
-            plumePolygon = L.polygon(points, {
-                color: "#ff5722",
-                fillColor: "#ff7043",
-                fillOpacity: 0.45,
-                weight: 2,
-                dashArray: "5, 5"
-            }).addTo(map);
-            
-            plumePolygon.bindPopup("<b>Sector de Pluma de Dispersión de Gas</b><br>Zona de potencial riesgo por dirección del viento.");
+        if (windPolygonsLayerGroup) {
+            map.removeLayer(windPolygonsLayerGroup);
         }
+        
+        windPolygonsLayerGroup = L.layerGroup();
+
+        mangasData.features.forEach(feature => {
+            if (feature.geometry && feature.geometry.type === 'Point') {
+                const coords = feature.geometry.coordinates; // [lng, lat]
+                const origin = L.latLng(coords[1], coords[0]);
+                const points = calculatePlumePoints(origin, dir, speed);
+                
+                const poly = L.polygon(points, {
+                    color: "#00838f",
+                    fillColor: "#00acc1",
+                    fillOpacity: 0.4,
+                    weight: 2,
+                    dashArray: "5, 5"
+                });
+                
+                poly.bindPopup(`<b>Simulación de Viento</b><br>Manga: ${feature.properties.inst || 'Manga de Viento'}<br>Dirección del viento: ${dir}° (${speed} km/h)`);
+                windPolygonsLayerGroup.addLayer(poly);
+            }
+        });
+
+        windPolygonsLayerGroup.addTo(map);
     }
 
     function updatePlumeFromControls() {
@@ -2128,7 +2620,7 @@
         document.getElementById('sim-dir-val').innerText = `${dir}°`;
         document.getElementById('sim-speed-val').innerText = `${speed} km/h`;
         
-        updatePlume();
+        updateWindSimulation();
     }
 
     // Cargar clima al iniciar
