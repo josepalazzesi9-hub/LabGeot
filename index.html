@@ -387,6 +387,121 @@
     cursor: pointer;
   }
 
+    .sidebar-search-btn {
+      background: none;
+      border: none;
+      color: #757575;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    /* Permanent polygon text labels - integrated inside polygons without white cards */
+    .polygon-label {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      font-weight: 600 !important;
+      font-family: 'Outfit', sans-serif, system-ui;
+      text-align: center;
+      white-space: normal !important;
+      word-wrap: break-word !important;
+      max-width: 90px;
+      line-height: 1.15;
+      pointer-events: none !important;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, transform 0.25s ease, font-size 0.25s ease;
+    }
+    .polygon-label::before, .polygon-label::after {
+      display: none !important;
+    }
+    .barrios-label {
+      color: #1b5e20 !important;
+      text-shadow: 1.5px 1.5px 2px #ffffff, -1.5px -1.5px 2px #ffffff, 1.5px -1.5px 2px #ffffff, -1.5px 1.5px 2px #ffffff, 0 0 4px #ffffff !important;
+    }
+    .empresas-label {
+      color: #880e4f !important;
+      text-shadow: 1.5px 1.5px 2px #ffffff, -1.5px -1.5px 2px #ffffff, 1.5px -1.5px 2px #ffffff, -1.5px 1.5px 2px #ffffff, 0 0 4px #ffffff !important;
+    }
+    .delegaciones-label {
+      color: #004d40 !important;
+      text-shadow: 1.5px 1.5px 2px #ffffff, -1.5px -1.5px 2px #ffffff, 1.5px -1.5px 2px #ffffff, -1.5px 1.5px 2px #ffffff, 0 0 4px #ffffff !important;
+    }
+
+    /* Layer & Zoom specific visibility thresholds */
+    .leaflet-container.zoom-delegaciones-on .delegaciones-label {
+      opacity: 0.9 !important;
+      visibility: visible !important;
+      font-size: 0.72rem !important;
+    }
+    .leaflet-container.zoom-close .delegaciones-label {
+      opacity: 1 !important;
+      font-size: 0.82rem !important;
+    }
+
+    .leaflet-container.zoom-barrios-on .barrios-label {
+      opacity: 0.9 !important;
+      visibility: visible !important;
+      font-size: 0.62rem !important;
+    }
+    .leaflet-container.zoom-close .barrios-label {
+      opacity: 1 !important;
+      font-size: 0.72rem !important;
+    }
+
+    .leaflet-container.zoom-empresas-on .empresas-label {
+      opacity: 0.9 !important;
+      visibility: visible !important;
+      font-size: 0.68rem !important;
+      max-width: 95px;
+    }
+    .leaflet-container.zoom-close .empresas-label {
+      opacity: 1 !important;
+      font-size: 0.78rem !important;
+      max-width: 115px;
+    }
+
+    /* Collapsible Sidebar Widgets */
+    .collapsible-widget {
+      border-top: 1px solid #e0e0e0;
+      background: #ffffff;
+      transition: background 0.2s ease;
+    }
+    .collapsible-widget-header {
+      padding: 12px 15px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #333333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s ease;
+    }
+    .collapsible-widget-header:hover {
+      background: #f5f5f5;
+    }
+    .collapsible-widget-chevron {
+      font-size: 0.75rem;
+      color: #757575;
+      transition: transform 0.25s ease;
+      width: 12px;
+      text-align: center;
+    }
+    .collapsible-widget-body {
+      display: none;
+      padding: 12px 15px 15px 15px;
+      background: #fafafa;
+      border-top: 1px dashed #eee;
+    }
+    .collapsible-widget-body.open {
+      display: block;
+    }
+
   /* --- Footer --- */
   .map-footer {
     position: absolute;
@@ -578,55 +693,63 @@
       </div>
       
       <!-- Custom Origin Selection Widget -->
-      <div class="custom-origin-widget" style="padding: 15px; border-top: 1px solid #ddd; background: #ffffff;">
-        <span style="font-weight: bold; font-size: 0.95rem; color: #333; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-          <i class="fas fa-map-pin" style="color: #e65100;"></i> Origen Personalizado
-        </span>
-        <button id="custom-origin-toggle-btn" onclick="toggleCustomOriginPickMode()" style="width: 100%; padding: 9px 12px; background: #fff3e0; color: #e65100; border: 1.5px solid #ffb74d; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
-          <i class="fas fa-crosshairs"></i> <span id="custom-origin-btn-text">Activar Origen en Mapa</span>
-        </button>
-        <div id="custom-origin-status-box" style="display: none; margin-top: 10px; font-size: 0.8rem; background: #fff8e1; color: #f57f17; padding: 8px 10px; border-radius: 6px; border-left: 4px solid #ffb300;">
-          <div id="custom-origin-status-text" style="font-weight: bold; margin-bottom: 4px; color: #e65100;">Punto fijado en el mapa</div>
-          <button onclick="quitarPuntoOrigen()" style="background: transparent; border: none; color: #c62828; text-decoration: underline; padding: 0; font-size: 0.75rem; cursor: pointer; font-weight: bold;">
-            <i class="fas fa-trash-alt"></i> Eliminar punto origen
+      <div class="collapsible-widget">
+        <div class="collapsible-widget-header" onclick="toggleWidgetSection('origin')">
+          <i class="fas fa-chevron-right collapsible-widget-chevron" id="origin-widget-chevron"></i>
+          <i class="fas fa-map-pin" style="color: #e65100;"></i>
+          <span>Origen Personalizado</span>
+        </div>
+        <div class="collapsible-widget-body" id="origin-widget-body">
+          <button id="custom-origin-toggle-btn" onclick="toggleCustomOriginPickMode()" style="width: 100%; padding: 9px 12px; background: #fff3e0; color: #e65100; border: 1.5px solid #ffb74d; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
+            <i class="fas fa-crosshairs"></i> <span id="custom-origin-btn-text">Activar Origen en Mapa</span>
           </button>
+          <div id="custom-origin-status-box" style="display: none; margin-top: 10px; font-size: 0.8rem; background: #fff8e1; color: #f57f17; padding: 8px 10px; border-radius: 6px; border-left: 4px solid #ffb300;">
+            <div id="custom-origin-status-text" style="font-weight: bold; margin-bottom: 4px; color: #e65100;">Punto fijado en el mapa</div>
+            <button onclick="quitarPuntoOrigen()" style="background: transparent; border: none; color: #c62828; text-decoration: underline; padding: 0; font-size: 0.75rem; cursor: pointer; font-weight: bold;">
+              <i class="fas fa-trash-alt"></i> Eliminar punto origen
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Weather and Wind Simulation Widget -->
-      <div class="simulation-widget" style="padding: 15px; border-top: 1px solid #ddd; background: #fafafa;">
-        <span style="font-weight: bold; font-size: 0.95rem; color: #333; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-          <i class="fas fa-wind" style="color: #2e7d32;"></i> Clima y Dirección del Viento
-        </span>
-        <div id="weather-info" style="font-size: 0.85rem; color: #555; margin-bottom: 12px; display: flex; align-items: center; gap: 15px;">
-          <div><i class="fas fa-location-arrow" id="wind-arrow" style="transition: transform 0.5s; display: inline-block;"></i> <span id="wind-dir-text">Cargando viento...</span></div>
-          <div><i class="fas fa-tachometer-alt"></i> <span id="wind-speed-text">-- km/h</span></div>
+      <div class="collapsible-widget">
+        <div class="collapsible-widget-header" onclick="toggleWidgetSection('wind')">
+          <i class="fas fa-chevron-right collapsible-widget-chevron" id="wind-widget-chevron"></i>
+          <i class="fas fa-wind" style="color: #2e7d32;"></i>
+          <span>Clima y Dirección del Viento</span>
         </div>
-        
-        <div style="margin-bottom: 12px;">
-          <label style="font-size: 0.85rem; font-weight: bold; color: #555; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-            <input type="checkbox" id="plume-toggle" onchange="toggleWindSimulation(this.checked)" style="cursor: pointer;">
-            Simular Viento en Mangas
-          </label>
-        </div>
-        
-        <div id="plume-controls" style="display: none; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 0.8rem; color: #555;">
-          <div style="margin-bottom: 8px;">
-            <span style="display: flex; justify-content: space-between;">
-              <span>Dirección del viento (°):</span>
-              <strong id="sim-dir-val">--</strong>
-            </span>
-            <input type="range" id="sim-wind-dir" min="0" max="360" value="0" oninput="updatePlumeFromControls()" style="width: 100%;">
+        <div class="collapsible-widget-body" id="wind-widget-body">
+          <div id="weather-info" style="font-size: 0.85rem; color: #555; margin-bottom: 12px; display: flex; align-items: center; gap: 15px;">
+            <div><i class="fas fa-location-arrow" id="wind-arrow" style="transition: transform 0.5s; display: inline-block;"></i> <span id="wind-dir-text">Cargando viento...</span></div>
+            <div><i class="fas fa-tachometer-alt"></i> <span id="wind-speed-text">-- km/h</span></div>
           </div>
-          <div style="margin-bottom: 8px;">
-            <span style="display: flex; justify-content: space-between;">
-              <span>Velocidad del viento (km/h):</span>
-              <strong id="sim-speed-val">--</strong>
-            </span>
-            <input type="range" id="sim-wind-speed" min="5" max="100" value="20" oninput="updatePlumeFromControls()" style="width: 100%;">
+          
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 0.85rem; font-weight: bold; color: #555; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="plume-toggle" onchange="toggleWindSimulation(this.checked)" style="cursor: pointer;">
+              Simular Viento en Mangas
+            </label>
           </div>
-          <div style="font-size: 0.75rem; color: #888; font-style: italic;">
-            * Muestra la dirección y proyección del viento desde las mangas instaladas.
+          
+          <div id="plume-controls" style="display: none; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 0.8rem; color: #555;">
+            <div style="margin-bottom: 8px;">
+              <span style="display: flex; justify-content: space-between;">
+                <span>Dirección del viento (°):</span>
+                <strong id="sim-dir-val">--</strong>
+              </span>
+              <input type="range" id="sim-wind-dir" min="0" max="360" value="0" oninput="updatePlumeFromControls()" style="width: 100%;">
+            </div>
+            <div style="margin-bottom: 8px;">
+              <span style="display: flex; justify-content: space-between;">
+                <span>Velocidad del viento (km/h):</span>
+                <strong id="sim-speed-val">--</strong>
+              </span>
+              <input type="range" id="sim-wind-speed" min="5" max="100" value="20" oninput="updatePlumeFromControls()" style="width: 100%;">
+            </div>
+            <div style="font-size: 0.75rem; color: #888; font-style: italic;">
+              * Muestra la dirección y proyección del viento desde las mangas instaladas.
+            </div>
           </div>
         </div>
       </div>
@@ -734,6 +857,17 @@
     map.on('zoomend moveend', updateScale);
     updateScale();
 
+    function updatePolygonLabelScale() {
+        const zoom = map.getZoom();
+        const container = map.getContainer();
+        container.classList.toggle('zoom-delegaciones-on', zoom >= 11);
+        container.classList.toggle('zoom-barrios-on', zoom >= 13);
+        container.classList.toggle('zoom-empresas-on', zoom >= 14);
+        container.classList.toggle('zoom-close', zoom >= 15);
+    }
+    map.on('zoomend', updatePolygonLabelScale);
+    updatePolygonLabelScale();
+
     function toggleBasemapSelector(e) {
         if(e) e.stopPropagation();
         document.getElementById('basemap-selector').classList.toggle('active');
@@ -826,6 +960,14 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+                        const nameUpper = (feature.properties.nom || '').toUpperCase();
+                        if (nameUpper) {
+                            layer.bindTooltip(nameUpper, {
+                                permanent: true,
+                                direction: 'center',
+                                className: 'polygon-label barrios-label'
+                            });
+                        }
                     }
                 });
             }
@@ -844,27 +986,17 @@
                     e.stopPropagation();
                     let targetLayer;
                     barriosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
-                    if(!isBarriosVisible) {
-                        // Clear all others first to ensure "uno por uno"
-                        barriosLayerGroup.eachLayer(l => {
-                            if (map.hasLayer(l) && l !== targetLayer) {
-                                map.removeLayer(l);
-                            }
-                        });
-                        document.querySelectorAll('#barrios-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+                    if (!targetLayer) return;
 
-                        if (!map.hasLayer(targetLayer)) {
-                            map.addLayer(targetLayer);
-                            item.classList.add('active');
-                            zoomABarrio(feature);
-                        } else {
-                            // If it was already active, clicking it again turns it off
-                            map.removeLayer(targetLayer);
-                            item.classList.remove('active');
-                        }
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
                     } else {
-                        zoomABarrio(feature);
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
                     }
+                    zoomABarrio(feature);
+                    updateMainLayerVisibilityState('barrios');
                 };
                 listDiv.appendChild(item);
             });
@@ -914,27 +1046,17 @@
                     e.stopPropagation();
                     let targetLayer;
                     centrosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
-                    if(!isCentrosVisible) {
-                        // Clear all others first to ensure "uno por uno"
-                        centrosLayerGroup.eachLayer(l => {
-                            if (map.hasLayer(l) && l !== targetLayer) {
-                                map.removeLayer(l);
-                            }
-                        });
-                        document.querySelectorAll('#centros-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+                    if (!targetLayer) return;
 
-                        if (!map.hasLayer(targetLayer)) {
-                            map.addLayer(targetLayer);
-                            item.classList.add('active');
-                            zoomACentro(feature);
-                        } else {
-                            // If it was already active, clicking it again turns it off
-                            map.removeLayer(targetLayer);
-                            item.classList.remove('active');
-                        }
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
                     } else {
-                        zoomACentro(feature);
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
                     }
+                    zoomACentro(feature);
+                    updateMainLayerVisibilityState('centros');
                 };
                 listDiv.appendChild(item);
             });
@@ -993,27 +1115,17 @@
                     e.stopPropagation();
                     let targetLayer;
                     comedoresLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
-                    if(!isComedoresVisible) {
-                        // Clear all others first to ensure "uno por uno"
-                        comedoresLayerGroup.eachLayer(l => {
-                            if (map.hasLayer(l) && l !== targetLayer) {
-                                map.removeLayer(l);
-                            }
-                        });
-                        document.querySelectorAll('#comedores-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+                    if (!targetLayer) return;
 
-                        if (!map.hasLayer(targetLayer)) {
-                            map.addLayer(targetLayer);
-                            item.classList.add('active');
-                            zoomAComedor(feature);
-                        } else {
-                            // If it was already active, clicking it again turns it off
-                            map.removeLayer(targetLayer);
-                            item.classList.remove('active');
-                        }
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
                     } else {
-                        zoomAComedor(feature);
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
                     }
+                    zoomAComedor(feature);
+                    updateMainLayerVisibilityState('comedores');
                 };
                 listDiv.appendChild(item);
             });
@@ -1062,27 +1174,17 @@
                     e.stopPropagation();
                     let targetLayer;
                     deportivosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
-                    if(!isDeportivosVisible) {
-                        // Clear all others first to ensure "uno por uno"
-                        deportivosLayerGroup.eachLayer(l => {
-                            if (map.hasLayer(l) && l !== targetLayer) {
-                                map.removeLayer(l);
-                            }
-                        });
-                        document.querySelectorAll('#deportivos-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+                    if (!targetLayer) return;
 
-                        if (!map.hasLayer(targetLayer)) {
-                            map.addLayer(targetLayer);
-                            item.classList.add('active');
-                            zoomADeportivo(feature);
-                        } else {
-                            // If it was already active, clicking it again turns it off
-                            map.removeLayer(targetLayer);
-                            item.classList.remove('active');
-                        }
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
                     } else {
-                        zoomADeportivo(feature);
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
                     }
+                    zoomADeportivo(feature);
+                    updateMainLayerVisibilityState('deportivos');
                 };
                 listDiv.appendChild(item);
             });
@@ -1140,27 +1242,17 @@
                     e.stopPropagation();
                     let targetLayer;
                     respuestaLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
-                    if(!isRespuestaVisible) {
-                        // Clear all others first to ensure "uno por uno"
-                        respuestaLayerGroup.eachLayer(l => {
-                            if (map.hasLayer(l) && l !== targetLayer) {
-                                map.removeLayer(l);
-                            }
-                        });
-                        document.querySelectorAll('#respuesta-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+                    if (!targetLayer) return;
 
-                        if (!map.hasLayer(targetLayer)) {
-                            map.addLayer(targetLayer);
-                            item.classList.add('active');
-                            zoomARespuesta(feature);
-                        } else {
-                            // If it was already active, clicking it again turns it off
-                            map.removeLayer(targetLayer);
-                            item.classList.remove('active');
-                        }
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
                     } else {
-                        zoomARespuesta(feature);
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
                     }
+                    zoomARespuesta(feature);
+                    updateMainLayerVisibilityState('respuesta');
                 };
                 listDiv.appendChild(item);
             });
@@ -1185,11 +1277,21 @@
                         const props = feature.properties;
                         const center = getLayerCenter(layer);
                         let content = `<b>${props.nom || 'Delegación Municipal'}</b><br>Dirección: ${props.dir || '-'}<br>Teléfono: ${props.num || '-'}`;
-                        if (props.obs) content += `<br>Obs: ${props.obs}`;
+                        if (props.obs && !props.obs.toLowerCase().includes('última actualización') && !props.obs.toLowerCase().includes('ultima actualizacion')) {
+                            content += `<br>Obs: ${props.obs}`;
+                        }
                         if (center) {
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+                        const nameUpper = (props.nom || '').toUpperCase();
+                        if (nameUpper) {
+                            layer.bindTooltip(nameUpper, {
+                                permanent: true,
+                                direction: 'center',
+                                className: 'polygon-label delegaciones-label'
+                            });
+                        }
                     }
                 });
             }
@@ -1211,26 +1313,17 @@
                     e.stopPropagation();
                     let targetLayer;
                     delegacionesLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
-                    if(!isDelegacionesVisible) {
-                        // Clear all others first to ensure "uno por uno"
-                        delegacionesLayerGroup.eachLayer(l => {
-                            if (map.hasLayer(l) && l !== targetLayer) {
-                                map.removeLayer(l);
-                            }
-                        });
-                        document.querySelectorAll('#delegaciones-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+                    if (!targetLayer) return;
 
-                        if (!map.hasLayer(targetLayer)) {
-                            map.addLayer(targetLayer);
-                            item.classList.add('active');
-                            zoomADelegacion(feature);
-                        } else {
-                            map.removeLayer(targetLayer);
-                            item.classList.remove('active');
-                        }
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
                     } else {
-                        zoomADelegacion(feature);
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
                     }
+                    zoomADelegacion(feature);
+                    updateMainLayerVisibilityState('delegaciones');
                 };
                 listDiv.appendChild(item);
             });
@@ -1284,26 +1377,17 @@
                     e.stopPropagation();
                     let targetLayer;
                     escuelasLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
-                    if(!isEscuelasVisible) {
-                        // Clear all others first to ensure "uno por uno"
-                        escuelasLayerGroup.eachLayer(l => {
-                            if (map.hasLayer(l) && l !== targetLayer) {
-                                map.removeLayer(l);
-                            }
-                        });
-                        document.querySelectorAll('#escuelas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+                    if (!targetLayer) return;
 
-                        if (!map.hasLayer(targetLayer)) {
-                            map.addLayer(targetLayer);
-                            item.classList.add('active');
-                            zoomAEscuela(feature);
-                        } else {
-                            map.removeLayer(targetLayer);
-                            item.classList.remove('active');
-                        }
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
                     } else {
-                        zoomAEscuela(feature);
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
                     }
+                    zoomAEscuela(feature);
+                    updateMainLayerVisibilityState('escuelas');
                 };
                 listDiv.appendChild(item);
             });
@@ -1342,45 +1426,73 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+                        let nameRaw = props.Empresaa || props.nom || '';
+                        if (nameRaw.toUpperCase().includes('ZONA FRANCA')) {
+                            nameRaw = 'Zona Franca';
+                        }
+                        const nameUpper = nameRaw.toUpperCase();
+                        if (nameUpper) {
+                            layer.bindTooltip(nameUpper, {
+                                permanent: true,
+                                direction: 'center',
+                                className: 'polygon-label empresas-label'
+                            });
+                        }
                     }
                 });
             }
 
-            const featuresOrdenados = [...empresasGeoJSON.features].sort((a,b) => 
-                (a.properties.Empresaa || "").localeCompare(b.properties.Empresaa || "")
-            );
+            // Agrupar empresas por nombre único para consolidar polígonos divididos (ej. Cargill S.A.)
+            const groupedFeatures = {};
+            empresasGeoJSON.features.forEach((feature) => {
+                const name = feature.properties.Empresaa || 'Empresa Sin Nombre';
+                if (!groupedFeatures[name]) {
+                    groupedFeatures[name] = [];
+                }
+                groupedFeatures[name].push(feature);
+            });
+
+            const sortedNames = Object.keys(groupedFeatures).sort((a, b) => a.localeCompare(b));
 
             listDiv.innerHTML = '';
             
-            featuresOrdenados.forEach((feature) => {
+            sortedNames.forEach((name) => {
+                const featuresList = groupedFeatures[name];
                 const item = document.createElement('div');
                 item.className = 'sub-layer-item';
-                const props = feature.properties;
-                const nom = props.Empresaa || 'Empresa Sin Nombre';
-                item.innerHTML = `<div>${nom}</div>`;
+                item.innerHTML = `<div>${name}</div>`;
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    empresasLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
-                    if(!isEmpresasVisible) {
-                        empresasLayerGroup.eachLayer(l => {
-                            if (map.hasLayer(l) && l !== targetLayer) {
-                                map.removeLayer(l);
-                            }
-                        });
-                        document.querySelectorAll('#empresas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
-
-                        if (!map.hasLayer(targetLayer)) {
-                            map.addLayer(targetLayer);
-                            item.classList.add('active');
-                            zoomAEmpresa(feature);
-                        } else {
-                            map.removeLayer(targetLayer);
-                            item.classList.remove('active');
+                    const targetLayers = [];
+                    empresasLayerGroup.eachLayer(l => {
+                        if (featuresList.includes(l.feature)) {
+                            targetLayers.push(l);
                         }
+                    });
+                    if (targetLayers.length === 0) return;
+
+                    const allActive = targetLayers.every(l => map.hasLayer(l));
+
+                    if (!allActive) {
+                        targetLayers.forEach(l => {
+                            if (!map.hasLayer(l)) map.addLayer(l);
+                        });
+                        item.classList.add('active');
                     } else {
-                        zoomAEmpresa(feature);
+                        targetLayers.forEach(l => {
+                            if (map.hasLayer(l)) map.removeLayer(l);
+                        });
+                        item.classList.remove('active');
                     }
+
+                    if (targetLayers.length === 1) {
+                        zoomAEmpresa(targetLayers[0].feature);
+                    } else {
+                        const group = L.featureGroup(targetLayers);
+                        map.fitBounds(group.getBounds(), { padding: [50, 50], maxZoom: 16 });
+                        if (targetLayers[0]) targetLayers[0].openPopup();
+                    }
+                    updateMainLayerVisibilityState('empresas');
                 };
                 listDiv.appendChild(item);
             });
@@ -1432,25 +1544,17 @@
                     e.stopPropagation();
                     let targetLayer;
                     mangasLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
-                    if(!isMangasVisible) {
-                        mangasLayerGroup.eachLayer(l => {
-                            if (map.hasLayer(l) && l !== targetLayer) {
-                                map.removeLayer(l);
-                            }
-                        });
-                        document.querySelectorAll('#mangas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+                    if (!targetLayer) return;
 
-                        if (!map.hasLayer(targetLayer)) {
-                            map.addLayer(targetLayer);
-                            item.classList.add('active');
-                            zoomAManga(feature);
-                        } else {
-                            map.removeLayer(targetLayer);
-                            item.classList.remove('active');
-                        }
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
                     } else {
-                        zoomAManga(feature);
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
                     }
+                    zoomAManga(feature);
+                    updateMainLayerVisibilityState('mangas');
                 };
                 listDiv.appendChild(item);
             });
@@ -1502,25 +1606,17 @@
                     e.stopPropagation();
                     let targetLayer;
                     puntosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
-                    if(!isPuntosVisible) {
-                        puntosLayerGroup.eachLayer(l => {
-                            if (map.hasLayer(l) && l !== targetLayer) {
-                                map.removeLayer(l);
-                            }
-                        });
-                        document.querySelectorAll('#puntos-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+                    if (!targetLayer) return;
 
-                        if (!map.hasLayer(targetLayer)) {
-                            map.addLayer(targetLayer);
-                            item.classList.add('active');
-                            zoomAPunto(feature);
-                        } else {
-                            map.removeLayer(targetLayer);
-                            item.classList.remove('active');
-                        }
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
                     } else {
-                        zoomAPunto(feature);
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
                     }
+                    zoomAPunto(feature);
+                    updateMainLayerVisibilityState('puntos');
                 };
                 listDiv.appendChild(item);
             });
@@ -1572,25 +1668,17 @@
                     e.stopPropagation();
                     let targetLayer;
                     sirenasLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
-                    if(!isSirenasVisible) {
-                        sirenasLayerGroup.eachLayer(l => {
-                            if (map.hasLayer(l) && l !== targetLayer) {
-                                map.removeLayer(l);
-                            }
-                        });
-                        document.querySelectorAll('#sirenas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
+                    if (!targetLayer) return;
 
-                        if (!map.hasLayer(targetLayer)) {
-                            map.addLayer(targetLayer);
-                            item.classList.add('active');
-                            zoomASirena(feature);
-                        } else {
-                            map.removeLayer(targetLayer);
-                            item.classList.remove('active');
-                        }
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
                     } else {
-                        zoomASirena(feature);
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
                     }
+                    zoomASirena(feature);
+                    updateMainLayerVisibilityState('sirenas');
                 };
                 listDiv.appendChild(item);
             });
@@ -1613,239 +1701,94 @@
         }
     }
 
+    function toggleWidgetSection(id) {
+        const body = document.getElementById(id + '-widget-body');
+        const chev = document.getElementById(id + '-widget-chevron');
+        if (body && chev) {
+            body.classList.toggle('open');
+            if (body.classList.contains('open')) {
+                chev.classList.replace('fa-chevron-right', 'fa-chevron-down');
+            } else {
+                chev.classList.replace('fa-chevron-down', 'fa-chevron-right');
+            }
+        }
+    }
+
+    function updateMainLayerVisibilityState(capa) {
+        const btn = document.getElementById(capa + '-btn');
+        const icon = document.getElementById(capa + '-visibility');
+        if (!btn || !icon) return;
+
+        const activeItems = document.querySelectorAll('#' + capa + '-list .sub-layer-item.active');
+        if (activeItems.length > 0) {
+            btn.classList.add('active');
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+            icon.classList.add('on');
+            setLayerVisibleVar(capa, true);
+        } else {
+            btn.classList.remove('active');
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+            icon.classList.remove('on');
+            setLayerVisibleVar(capa, false);
+        }
+    }
+
+    function setLayerVisibleVar(capa, visible) {
+        if (capa === 'barrios') isBarriosVisible = visible;
+        else if (capa === 'centros') isCentrosVisible = visible;
+        else if (capa === 'comedores') isComedoresVisible = visible;
+        else if (capa === 'deportivos') isDeportivosVisible = visible;
+        else if (capa === 'respuesta') isRespuestaVisible = visible;
+        else if (capa === 'delegaciones') isDelegacionesVisible = visible;
+        else if (capa === 'escuelas') isEscuelasVisible = visible;
+        else if (capa === 'empresas') isEmpresasVisible = visible;
+        else if (capa === 'mangas') isMangasVisible = visible;
+        else if (capa === 'puntos') isPuntosVisible = visible;
+        else if (capa === 'sirenas') isSirenasVisible = visible;
+    }
+
+    function getLayerGroupByName(capa) {
+        if (capa === 'barrios') return barriosLayerGroup;
+        if (capa === 'centros') return centrosLayerGroup;
+        if (capa === 'comedores') return comedoresLayerGroup;
+        if (capa === 'deportivos') return deportivosLayerGroup;
+        if (capa === 'respuesta') return respuestaLayerGroup;
+        if (capa === 'delegaciones') return delegacionesLayerGroup;
+        if (capa === 'escuelas') return escuelasLayerGroup;
+        if (capa === 'empresas') return empresasLayerGroup;
+        if (capa === 'mangas') return mangasLayerGroup;
+        if (capa === 'puntos') return puntosLayerGroup;
+        if (capa === 'sirenas') return sirenasLayerGroup;
+        return null;
+    }
+
     function toggleLayer(capa) {
-        if(capa === 'barrios') {
-            const btn = document.getElementById('barrios-btn');
-            const icon = document.getElementById('barrios-visibility');
-            isBarriosVisible = !isBarriosVisible;
-            
-            if(isBarriosVisible) {
-                btn.classList.add('active');
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-                icon.classList.add('on');
-                
+        const btn = document.getElementById(capa + '-btn');
+        const icon = document.getElementById(capa + '-visibility');
+        const listItems = document.querySelectorAll('#' + capa + '-list .sub-layer-item');
+        const activeItems = document.querySelectorAll('#' + capa + '-list .sub-layer-item.active');
+        const layerGroup = getLayerGroupByName(capa);
 
-                if(barriosLayerGroup) barriosLayerGroup.addTo(map);
-            } else {
-                btn.classList.remove('active');
+        if (activeItems.length > 0) {
+            // Apagar todos los elementos de esta capa
+            if (btn) btn.classList.remove('active');
+            if (icon) {
                 icon.classList.replace('fa-eye', 'fa-eye-slash');
                 icon.classList.remove('on');
-                
-                if(barriosLayerGroup) map.removeLayer(barriosLayerGroup);
-                document.querySelectorAll('#barrios-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
             }
-        } else if(capa === 'centros') {
-            const btn = document.getElementById('centros-btn');
-            const icon = document.getElementById('centros-visibility');
-            isCentrosVisible = !isCentrosVisible;
-            
-            if(isCentrosVisible) {
-                btn.classList.add('active');
+            if (layerGroup) map.removeLayer(layerGroup);
+            listItems.forEach(el => el.classList.remove('active'));
+            setLayerVisibleVar(capa, false);
+        } else {
+            // Encender todos los elementos de esta capa
+            if (btn) btn.classList.add('active');
+            if (icon) {
                 icon.classList.replace('fa-eye-slash', 'fa-eye');
                 icon.classList.add('on');
-                
-
-                if(centrosLayerGroup) centrosLayerGroup.addTo(map);
-            } else {
-                btn.classList.remove('active');
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-                icon.classList.remove('on');
-                
-                if(centrosLayerGroup) map.removeLayer(centrosLayerGroup);
-                document.querySelectorAll('#centros-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
             }
-        } else if(capa === 'comedores') {
-            const btn = document.getElementById('comedores-btn');
-            const icon = document.getElementById('comedores-visibility');
-            isComedoresVisible = !isComedoresVisible;
-            
-            if(isComedoresVisible) {
-                btn.classList.add('active');
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-                icon.classList.add('on');
-                
-
-                if(comedoresLayerGroup) comedoresLayerGroup.addTo(map);
-            } else {
-                btn.classList.remove('active');
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-                icon.classList.remove('on');
-                
-                if(comedoresLayerGroup) map.removeLayer(comedoresLayerGroup);
-                document.querySelectorAll('#comedores-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
-            }
-        } else if(capa === 'deportivos') {
-            const btn = document.getElementById('deportivos-btn');
-            const icon = document.getElementById('deportivos-visibility');
-            isDeportivosVisible = !isDeportivosVisible;
-            
-            if(isDeportivosVisible) {
-                btn.classList.add('active');
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-                icon.classList.add('on');
-                
-                if(!deportivosLayerGroup && deportivosGeoJSON) {
-                    deportivosLayerGroup = L.geoJSON(deportivosGeoJSON, {
-                        style: { color: '#1976d2', weight: 2, fillColor: '#2196f3', fillOpacity: 0.3 },
-                        onEachFeature: (feature, layer) => {
-                            const props = feature.properties;
-                            const center = getLayerCenter(layer);
-                            let content = `<b>${props.Name || 'Establecimiento Deportivo'}</b><br>Dirección: ${props.dir || '-'}`;
-                            if (center) {
-                                content += `<br><a href="#" onclick="event.preventDefault(); abrirRuta(${center.lat}, ${center.lng})" style="display:inline-block; margin-top:8px; color:#2e7d32; font-weight:bold; text-decoration:none;"><i class="fas fa-route"></i> Cómo llegar</a>`;
-                            }
-                            layer.bindPopup(content);
-                        }
-                    });
-                }
-                if(deportivosLayerGroup) deportivosLayerGroup.addTo(map);
-            } else {
-                btn.classList.remove('active');
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-                icon.classList.remove('on');
-                
-                if(deportivosLayerGroup) map.removeLayer(deportivosLayerGroup);
-                document.querySelectorAll('#deportivos-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
-            }
-        } else if(capa === 'respuesta') {
-            const btn = document.getElementById('respuesta-btn');
-            const icon = document.getElementById('respuesta-visibility');
-            isRespuestaVisible = !isRespuestaVisible;
-            
-            if(isRespuestaVisible) {
-                btn.classList.add('active');
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-                icon.classList.add('on');
-                
-                if(!respuestaLayerGroup && respuestaGeoJSON) {
-                    respuestaLayerGroup = L.geoJSON(respuestaGeoJSON, {
-                        style: { color: '#8e24aa', weight: 2, fillColor: '#9c27b0', fillOpacity: 0.3 },
-                        onEachFeature: (feature, layer) => {
-                            const props = feature.properties;
-                            const center = getLayerCenter(layer);
-                            let content = `<b>${props.nom || 'Respuesta Primaria'}</b><br>Dirección: ${props.dir || '-'}<br>Tipo: ${props.tip || '-'}`;
-                            if (center) {
-                                content += `<br><a href="#" onclick="event.preventDefault(); abrirRuta(${center.lat}, ${center.lng})" style="display:inline-block; margin-top:8px; color:#2e7d32; font-weight:bold; text-decoration:none;"><i class="fas fa-route"></i> Cómo llegar</a>`;
-                            }
-                            layer.bindPopup(content);
-                        }
-                    });
-                }
-                if(respuestaLayerGroup) respuestaLayerGroup.addTo(map);
-            } else {
-                btn.classList.remove('active');
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-                icon.classList.remove('on');
-                
-                if(respuestaLayerGroup) map.removeLayer(respuestaLayerGroup);
-                document.querySelectorAll('#respuesta-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
-            }
-        } else if(capa === 'delegaciones') {
-            const btn = document.getElementById('delegaciones-btn');
-            const icon = document.getElementById('delegaciones-visibility');
-            isDelegacionesVisible = !isDelegacionesVisible;
-            
-            if(isDelegacionesVisible) {
-                btn.classList.add('active');
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-                icon.classList.add('on');
-                
-                if(delegacionesLayerGroup) delegacionesLayerGroup.addTo(map);
-            } else {
-                btn.classList.remove('active');
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-                icon.classList.remove('on');
-                
-                if(delegacionesLayerGroup) map.removeLayer(delegacionesLayerGroup);
-                document.querySelectorAll('#delegaciones-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
-            }
-        } else if(capa === 'escuelas') {
-            const btn = document.getElementById('escuelas-btn');
-            const icon = document.getElementById('escuelas-visibility');
-            isEscuelasVisible = !isEscuelasVisible;
-            
-            if(isEscuelasVisible) {
-                btn.classList.add('active');
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-                icon.classList.add('on');
-                
-                if(escuelasLayerGroup) escuelasLayerGroup.addTo(map);
-            } else {
-                btn.classList.remove('active');
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-                icon.classList.remove('on');
-                
-                if(escuelasLayerGroup) map.removeLayer(escuelasLayerGroup);
-                document.querySelectorAll('#escuelas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
-            }
-        } else if(capa === 'empresas') {
-            const btn = document.getElementById('empresas-btn');
-            const icon = document.getElementById('empresas-visibility');
-            isEmpresasVisible = !isEmpresasVisible;
-            
-            if(isEmpresasVisible) {
-                btn.classList.add('active');
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-                icon.classList.add('on');
-                if(empresasLayerGroup) empresasLayerGroup.addTo(map);
-            } else {
-                btn.classList.remove('active');
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-                icon.classList.remove('on');
-                if(empresasLayerGroup) map.removeLayer(empresasLayerGroup);
-                document.querySelectorAll('#empresas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
-            }
-        } else if(capa === 'mangas') {
-            const btn = document.getElementById('mangas-btn');
-            const icon = document.getElementById('mangas-visibility');
-            isMangasVisible = !isMangasVisible;
-            
-            if(isMangasVisible) {
-                btn.classList.add('active');
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-                icon.classList.add('on');
-                if(mangasLayerGroup) mangasLayerGroup.addTo(map);
-            } else {
-                btn.classList.remove('active');
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-                icon.classList.remove('on');
-                if(mangasLayerGroup) map.removeLayer(mangasLayerGroup);
-                document.querySelectorAll('#mangas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
-            }
-        } else if(capa === 'puntos') {
-            const btn = document.getElementById('puntos-btn');
-            const icon = document.getElementById('puntos-visibility');
-            isPuntosVisible = !isPuntosVisible;
-            
-            if(isPuntosVisible) {
-                btn.classList.add('active');
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-                icon.classList.add('on');
-                if(puntosLayerGroup) puntosLayerGroup.addTo(map);
-            } else {
-                btn.classList.remove('active');
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-                icon.classList.remove('on');
-                if(puntosLayerGroup) map.removeLayer(puntosLayerGroup);
-                document.querySelectorAll('#puntos-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
-            }
-        } else if(capa === 'sirenas') {
-            const btn = document.getElementById('sirenas-btn');
-            const icon = document.getElementById('sirenas-visibility');
-            isSirenasVisible = !isSirenasVisible;
-            
-            if(isSirenasVisible) {
-                btn.classList.add('active');
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-                icon.classList.add('on');
-                if(sirenasLayerGroup) sirenasLayerGroup.addTo(map);
-            } else {
-                btn.classList.remove('active');
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-                icon.classList.remove('on');
-                if(sirenasLayerGroup) map.removeLayer(sirenasLayerGroup);
-                document.querySelectorAll('#sirenas-list .sub-layer-item.active').forEach(el => el.classList.remove('active'));
-            }
+            if (layerGroup) layerGroup.addTo(map);
+            listItems.forEach(el => el.classList.add('active'));
+            setLayerVisibleVar(capa, true);
         }
     }
 
