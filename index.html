@@ -379,12 +379,41 @@
     position: absolute;
     left: 10px;
     top: 10px;
-    z-index: 1001;
+    z-index: 1010;
     background: white;
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 8px;
     cursor: pointer;
+  }
+
+  .close-sidebar-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #666;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+    display: none;
+  }
+
+  .close-sidebar-btn:hover {
+    background: #f0f0f0;
+    color: #d32f2f;
+  }
+
+  #sidebar-overlay {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1004;
+    transition: opacity 0.3s ease;
   }
 
     .sidebar-search-btn {
@@ -526,6 +555,14 @@
       box-shadow: 2px 0 12px rgba(0, 0, 0, 0.25);
     }
 
+    #sidebar:not(.collapsed) ~ #sidebar-overlay {
+      display: block;
+    }
+
+    .close-sidebar-btn {
+      display: inline-block;
+    }
+
     .map-overlay-search {
       top: 12px;
       right: 60px;
@@ -575,8 +612,13 @@
 
     <div id="sidebar">
       <div class="sidebar-header">
-        <span style="font-weight: 800; font-size: 1.1rem; color: #444; letter-spacing: 0.5px;">MapAPELL <span style="font-weight: 400; color: #888;">| Capas</span></span>
-        <i class="fas fa-layer-group" style="color: var(--primary-color); font-size: 1.2rem;"></i>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-weight: 800; font-size: 1.1rem; color: #444; letter-spacing: 0.5px;">MapAPELL <span style="font-weight: 400; color: #888;">| Capas</span></span>
+          <i class="fas fa-layer-group" style="color: var(--primary-color); font-size: 1.2rem;"></i>
+        </div>
+        <button class="close-sidebar-btn" onclick="toggleSidebar()" aria-label="Cerrar capas" title="Cerrar menú">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
       <div class="search-layers">
         <input type="text" id="layer-filter-input" placeholder="Filtrar capas..." oninput="filterLayers(this.value)">
@@ -754,6 +796,8 @@
         </div>
       </div>
     </div>
+
+    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <div id="map">
       <div class="map-overlay-search">
