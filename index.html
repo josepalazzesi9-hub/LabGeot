@@ -595,6 +595,237 @@
       width: calc(100% - 70px);
       max-width: 280px;
     }
+
+    .header-buttons {
+      gap: 8px;
+    }
+    .header-buttons .btn-text {
+      display: none;
+    }
+    .header-buttons .btn-outline i, .header-buttons .btn-fill i {
+      margin-right: 0 !important;
+    }
+    .header-buttons .btn-outline, .header-buttons .btn-fill {
+      padding: 8px 12px;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 38px;
+      height: 38px;
+      box-sizing: border-box;
+    }
+  }
+
+  .header-buttons .btn-outline i, .header-buttons .btn-fill i {
+    margin-right: 8px;
+  }
+
+  /* --- Modal Informativo APELL --- */
+  .apell-modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    box-sizing: border-box;
+    opacity: 0;
+    transition: opacity 0.25s ease-in-out;
+  }
+
+  .apell-modal-backdrop.active {
+    display: flex;
+    opacity: 1;
+  }
+
+  .apell-modal-container {
+    background: #ffffff;
+    border-radius: 12px;
+    max-width: 650px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+    transform: scale(0.95);
+    transition: transform 0.25s ease-in-out;
+    overflow: hidden;
+  }
+
+  .apell-modal-backdrop.active .apell-modal-container {
+    transform: scale(1);
+  }
+
+  .apell-modal-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .apell-modal-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .apell-modal-icon {
+    font-size: 1.4rem;
+  }
+
+  .apell-modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  .apell-modal-close-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 50%;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .apell-modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .apell-modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .apell-modal-intro {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    line-height: 1.6;
+  }
+
+  .apell-modal-section {
+    margin-bottom: 22px;
+  }
+
+  .apell-modal-section h3 {
+    font-size: 1.05rem;
+    color: var(--primary-color);
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+
+  .apell-barrios-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
+  }
+
+  .apell-barrios-grid li {
+    background: #f1f8e9;
+    color: #1b5e20;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-left: 3px solid var(--primary-color);
+  }
+
+  .apell-sirenas-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .apell-sirenas-list li {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .apell-sirenas-list li i {
+    color: #e65100;
+    font-size: 1.2rem;
+    margin-top: 2px;
+  }
+
+  .apell-sirenas-list li strong {
+    display: block;
+    color: #333;
+  }
+
+  .apell-sirenas-list li span {
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .apell-alert-box {
+    background: #e8f5e9;
+    border-left: 4px solid var(--primary-color);
+    border-radius: 6px;
+    padding: 12px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 20px;
+  }
+
+  .apell-alert-box i {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    margin-top: 2px;
+  }
+
+  .apell-alert-box strong {
+    color: var(--secondary-color);
+  }
+
+  .apell-alert-box p {
+    margin: 4px 0 0 0;
+    font-size: 0.88rem;
+    color: #2e7d32;
+    line-height: 1.45;
+  }
+
+  .apell-modal-footer {
+    padding: 12px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
   }
 </style>
 </head>
@@ -603,7 +834,8 @@
   <header>
     <a href="https://www.apellbahiablanca.org.ar/" target="_blank" class="logo-container" style="text-decoration: none;"><img src="logo.png" alt="APELL Bahía Blanca" style="height: 50px; object-fit: contain;"></a>
     <div class="header-buttons">
-      <a href="descargas.html" class="btn-fill" title="Descargar Capas en formato GeoJSON"><i class="fas fa-download" style="margin-right: 8px;"></i>Portal de Descargas</a>
+      <button class="btn-outline" onclick="openApellModal()" title="Conocer más sobre el Proceso APELL Bahía Blanca" style="cursor: pointer; font-family: inherit;"><i class="fas fa-info-circle"></i><span class="btn-text">Conoce más</span></button>
+      <a href="descargas.html" class="btn-fill" title="Descargar Capas en formato GeoJSON"><i class="fas fa-download"></i><span class="btn-text">Portal de Descargas</span></a>
     </div>
   </header>
 
@@ -733,20 +965,27 @@
             <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
         </div>
       </div>
+
+      <!-- Área de influencia Shortcut -->
+      <div class="layer-item" id="area-influencia-btn" onclick="toggleAreaInfluencia()" style="border-top: 1px solid #e0e0e0; font-weight: 500;">
+          <i class="fas fa-layer-group" style="color: var(--primary-color);"></i>
+          <span class="layer-name" style="font-weight: 600;">Área de influencia</span>
+          <i class="fas fa-eye-slash layer-visibility-icon" id="area-influencia-visibility"></i>
+      </div>
       
       <!-- Custom Origin Selection Widget -->
       <div class="collapsible-widget">
         <div class="collapsible-widget-header" onclick="toggleWidgetSection('origin')">
           <i class="fas fa-chevron-right collapsible-widget-chevron" id="origin-widget-chevron"></i>
-          <i class="fas fa-map-pin" style="color: #e65100;"></i>
+          <i class="fas fa-map-pin" style="color: var(--primary-color);"></i>
           <span>Origen Personalizado</span>
         </div>
         <div class="collapsible-widget-body" id="origin-widget-body">
-          <button id="custom-origin-toggle-btn" onclick="toggleCustomOriginPickMode()" style="width: 100%; padding: 9px 12px; background: #fff3e0; color: #e65100; border: 1.5px solid #ffb74d; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
+          <button id="custom-origin-toggle-btn" onclick="toggleCustomOriginPickMode()" style="width: 100%; padding: 9px 12px; background: #e8f5e9; color: var(--primary-color); border: 1.5px solid #81c784; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
             <i class="fas fa-crosshairs"></i> <span id="custom-origin-btn-text">Activar Origen en Mapa</span>
           </button>
-          <div id="custom-origin-status-box" style="display: none; margin-top: 10px; font-size: 0.8rem; background: #fff8e1; color: #f57f17; padding: 8px 10px; border-radius: 6px; border-left: 4px solid #ffb300;">
-            <div id="custom-origin-status-text" style="font-weight: bold; margin-bottom: 4px; color: #e65100;">Punto fijado en el mapa</div>
+          <div id="custom-origin-status-box" style="display: none; margin-top: 10px; font-size: 0.8rem; background: #e8f5e9; color: #1b5e20; padding: 8px 10px; border-radius: 6px; border-left: 4px solid var(--primary-color);">
+            <div id="custom-origin-status-text" style="font-weight: bold; margin-bottom: 4px; color: var(--primary-color);">Punto fijado en el mapa</div>
             <button onclick="quitarPuntoOrigen()" style="background: transparent; border: none; color: #c62828; text-decoration: underline; padding: 0; font-size: 0.75rem; cursor: pointer; font-weight: bold;">
               <i class="fas fa-trash-alt"></i> Eliminar punto origen
             </button>
@@ -1806,12 +2045,164 @@
         return null;
     }
 
+    let areaInfluenciaLayerGroup = null;
+    let isAreaInfluenciaActive = false;
+
+    function toggleAreaInfluencia() {
+        const btn = document.getElementById('area-influencia-btn');
+        const icon = document.getElementById('area-influencia-visibility');
+        const delegacionesListDiv = document.getElementById('delegaciones-list');
+
+        if (typeof barriosData !== 'undefined') {
+            barriosGeoJSON = barriosData;
+        }
+        if (!delegacionesLayerGroup && typeof delegacionesData !== 'undefined') {
+            initDelegaciones();
+        }
+
+        if (!isAreaInfluenciaActive) {
+            isAreaInfluenciaActive = true;
+
+            if (btn) btn.classList.add('active');
+            if (icon) {
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.classList.add('on');
+            }
+
+            // 1. Crear / agregar capa independiente de Área de Influencia con NUEVO COLOR (cyan/azul)
+            if (!areaInfluenciaLayerGroup && barriosGeoJSON) {
+                const targetBarrios = ['white', 'justo', 'saladero', 'delfina', 'paraguaya', '26'];
+                areaInfluenciaLayerGroup = L.geoJSON(barriosGeoJSON, {
+                    filter: (feature) => {
+                        const nom = (feature.properties?.nom || '').toLowerCase();
+                        return targetBarrios.some(term => nom.includes(term));
+                    },
+                    style: {
+                        color: '#0288d1',
+                        weight: 3,
+                        fillColor: '#00acc1',
+                        fillOpacity: 0.4
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${feature.properties.nom || 'Barrio Proceso APELL'}</b>`;
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                    }
+                });
+            }
+
+            if (areaInfluenciaLayerGroup && !map.hasLayer(areaInfluenciaLayerGroup)) {
+                areaInfluenciaLayerGroup.addTo(map);
+            }
+
+            // 2. Activar la subcapa de Delegación Municipal de Ingeniero White
+            if (delegacionesLayerGroup) {
+                delegacionesLayerGroup.eachLayer(l => {
+                    const nom = (l.feature?.properties?.nom || '').toLowerCase();
+                    if (nom.includes('white') || nom.includes('ingeniero')) {
+                        if (!map.hasLayer(l)) {
+                            map.addLayer(l);
+                        }
+                        l.setStyle({
+                            color: '#0288d1',
+                            weight: 3,
+                            fillColor: '#00acc1',
+                            fillOpacity: 0.5
+                        });
+                    }
+                });
+            }
+
+            // Marcar activa la subcapa en la lista del sidebar de delegaciones
+            if (delegacionesListDiv) {
+                const subItems = delegacionesListDiv.querySelectorAll('.sub-layer-item');
+                subItems.forEach(item => {
+                    if (item.innerText.toLowerCase().includes('white') || item.innerText.toLowerCase().includes('ingeniero')) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+            updateMainLayerVisibilityState('delegaciones');
+
+            // 3. Zoom / fitBounds a la zona de Ingeniero White y abrir popup
+            if (areaInfluenciaLayerGroup) {
+                let ingWhiteBarrioLayer = null;
+                areaInfluenciaLayerGroup.eachLayer(l => {
+                    const nom = (l.feature?.properties?.nom || '').toLowerCase();
+                    if (nom.includes('white') || nom.includes('ingeniero')) {
+                        ingWhiteBarrioLayer = l;
+                    }
+                });
+
+                if (ingWhiteBarrioLayer) {
+                    map.fitBounds(ingWhiteBarrioLayer.getBounds(), { padding: [50, 50], maxZoom: 15 });
+                    ingWhiteBarrioLayer.openPopup();
+                } else {
+                    map.fitBounds(areaInfluenciaLayerGroup.getBounds(), { padding: [50, 50] });
+                }
+            }
+        } else {
+            isAreaInfluenciaActive = false;
+
+            if (btn) btn.classList.remove('active');
+            if (icon) {
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.classList.remove('on');
+            }
+
+            // Quitar capa de Área de Influencia
+            if (areaInfluenciaLayerGroup && map.hasLayer(areaInfluenciaLayerGroup)) {
+                map.removeLayer(areaInfluenciaLayerGroup);
+            }
+
+            // Restaurar Delegación Municipal de Ingeniero White a su estilo original y estado normal
+            if (delegacionesLayerGroup) {
+                delegacionesLayerGroup.eachLayer(l => {
+                    const nom = (l.feature?.properties?.nom || '').toLowerCase();
+                    if (nom.includes('white') || nom.includes('ingeniero')) {
+                        l.setStyle({ color: '#00796b', weight: 2, fillColor: '#009688', fillOpacity: 0.3 });
+                        map.removeLayer(l);
+                    }
+                });
+            }
+
+            if (delegacionesListDiv) {
+                const subItems = delegacionesListDiv.querySelectorAll('.sub-layer-item');
+                subItems.forEach(item => {
+                    if (item.innerText.toLowerCase().includes('white') || item.innerText.toLowerCase().includes('ingeniero')) {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+            updateMainLayerVisibilityState('delegaciones');
+        }
+    }
+
     function toggleLayer(capa) {
         const btn = document.getElementById(capa + '-btn');
         const icon = document.getElementById(capa + '-visibility');
         const listItems = document.querySelectorAll('#' + capa + '-list .sub-layer-item');
         const activeItems = document.querySelectorAll('#' + capa + '-list .sub-layer-item.active');
         const layerGroup = getLayerGroupByName(capa);
+
+        if (capa === 'barrios') {
+            if (isAreaInfluenciaActive) {
+                isAreaInfluenciaActive = false;
+                const areaBtn = document.getElementById('area-influencia-btn');
+                const areaIcon = document.getElementById('area-influencia-visibility');
+                if (areaBtn) areaBtn.classList.remove('active');
+                if (areaIcon) {
+                    areaIcon.classList.replace('fa-eye', 'fa-eye-slash');
+                    areaIcon.classList.remove('on');
+                }
+            }
+            if (barriosLayerGroup) {
+                barriosLayerGroup.setStyle({ color: '#2e7d32', weight: 2, fillColor: '#4caf50', fillOpacity: 0.3 });
+            }
+        }
 
         if (activeItems.length > 0) {
             // Apagar todos los elementos de esta capa
@@ -2612,6 +3003,103 @@
 
     // Cargar clima al iniciar
     fetchWeatherData();
+
+    // Lógica para abrir/cerrar modal informativo APELL
+    function openApellModal() {
+      const modal = document.getElementById('apell-info-modal-backdrop');
+      if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeApellModal() {
+      const modal = document.getElementById('apell-info-modal-backdrop');
+      if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    function closeApellModalOnBackdrop(e) {
+      if (e.target.id === 'apell-info-modal-backdrop') {
+        closeApellModal();
+      }
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeApellModal();
+      }
+    });
   </script>
+
+  <!-- Modal Informativo APELL -->
+  <div id="apell-info-modal-backdrop" class="apell-modal-backdrop" onclick="closeApellModalOnBackdrop(event)">
+    <div class="apell-modal-container" role="dialog" aria-labelledby="apell-modal-title" aria-modal="true">
+      <div class="apell-modal-header">
+        <div class="apell-modal-title-wrapper">
+          <i class="fas fa-info-circle apell-modal-icon"></i>
+          <h2 id="apell-modal-title">Proceso APELL Bahía Blanca</h2>
+        </div>
+        <button class="apell-modal-close-btn" onclick="closeApellModal()" aria-label="Cerrar modal" title="Cerrar (Esc)">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="apell-modal-body">
+        <p class="apell-modal-intro">
+          En 1995, ante la inquietud de los vecinos por el desarrollo del Polo Petroquímico en Ingeniero White, la comunidad, empresas y la Municipalidad gestionaron junto al PNUMA y Defensa Civil la implementación del Proceso APELL, convirtiendo a Bahía Blanca en ciudad piloto en Argentina. Este plan coordina la respuesta tecnológica y de concientización en la zona de influencia directa integrada por los siguientes barrios:
+        </p>
+
+        <div class="apell-modal-section">
+          <h3><i class="fas fa-map-marker-alt"></i> Barrios de Influencia Directa</h3>
+          <ul class="apell-barrios-grid">
+            <li><i class="fas fa-map-marker-alt"></i> Ingeniero White</li>
+            <li><i class="fas fa-map-marker-alt"></i> Boulevard Juan B. Justo</li>
+            <li><i class="fas fa-map-marker-alt"></i> Saladero</li>
+            <li><i class="fas fa-map-marker-alt"></i> Villa Delfina</li>
+            <li><i class="fas fa-map-marker-alt"></i> Loma Paraguaya</li>
+            <li><i class="fas fa-map-marker-alt"></i> Barrio 26 de Septiembre</li>
+          </ul>
+        </div>
+
+        <div class="apell-modal-section">
+          <h3><i class="fas fa-bullhorn"></i> Red de Sirenas Comunitarias</h3>
+          <p style="margin-top: 0; color: #444;">Para emitir la señal sonora de alerta a la población ante una eventual contingencia o fuga, el sistema dispone de sirenas comunitarias emplazadas en las siguientes ubicaciones:</p>
+          <ul class="apell-sirenas-list">
+            <li>
+              <i class="fas fa-broadcast-tower"></i>
+              <div>
+                <strong>Centro de Formación Profesional N° 401</strong>
+                <span>Intersección de Av. Dasso y Harris, Ingeniero White</span>
+              </div>
+            </li>
+            <li>
+              <i class="fas fa-broadcast-tower"></i>
+              <div>
+                <strong>Predio del Campo Escuela del Grupo Scout "Don E. Pilling"</strong>
+                <span>Esmeralda 3500</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="apell-alert-box">
+          <i class="fas fa-clock"></i>
+          <div>
+            <strong>Prueba Semanal de Sirenas</strong>
+            <p>Todos los jueves a las 11:00 hs se realiza la prueba semanal de estas sirenas con una emisión de aproximadamente un minuto de duración, una prueba sonora que sirve para verificar su correcto funcionamiento y habituar a toda la comunidad a su sonido.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="apell-modal-footer">
+        <button class="btn-fill" onclick="closeApellModal()" style="cursor: pointer;">
+          <i class="fas fa-check" style="margin-right: 6px;"></i> Entendido
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
