@@ -2061,17 +2061,64 @@
 
     let areaInfluenciaLayerGroup = null;
     let isAreaInfluenciaActive = false;
+    let ingWhiteBarrioLayer = null;
+    let ingWhiteDelegationLayer = null;
+
+    function initAreaInfluencia() {
+        if (areaInfluenciaLayerGroup) return;
+        if (typeof barriosData !== 'undefined') {
+            barriosGeoJSON = barriosData;
+            const targetBarrios = ['white', 'justo', 'saladero', 'delfina', 'paraguaya', '26'];
+            areaInfluenciaLayerGroup = L.geoJSON(barriosGeoJSON, {
+                filter: (feature) => {
+                    const nom = (feature.properties?.nom || '').toLowerCase();
+                    return targetBarrios.some(term => nom.includes(term));
+                },
+                style: {
+                    color: '#0288d1',
+                    weight: 3,
+                    fillColor: '#00acc1',
+                    fillOpacity: 0.4
+                },
+                onEachFeature: (feature, layer) => {
+                    const center = getLayerCenter(layer);
+                    let content = `<b>${feature.properties.nom || 'Barrio Proceso APELL'}</b>`;
+                    if (center) {
+                        content += renderPopupRouteButtons(center.lat, center.lng);
+                    }
+                    layer.bindPopup(content);
+
+                    const nameUpper = (feature.properties.nom || '').toUpperCase();
+                    if (nameUpper) {
+                        layer.bindTooltip(nameUpper, {
+                            permanent: true,
+                            direction: 'center',
+                            className: 'polygon-label area-influencia-label'
+                        });
+                        if (nameUpper.includes('WHITE') || nameUpper.includes('INGENIERO')) {
+                            ingWhiteBarrioLayer = layer;
+                        }
+                    }
+                }
+            });
+        }
+
+        if (delegacionesLayerGroup) {
+            delegacionesLayerGroup.eachLayer(l => {
+                const nom = (l.feature?.properties?.nom || '').toLowerCase();
+                if (nom.includes('white') || nom.includes('ingeniero')) {
+                    ingWhiteDelegationLayer = l;
+                }
+            });
+        }
+    }
 
     function toggleAreaInfluencia() {
         const btn = document.getElementById('area-influencia-btn');
         const icon = document.getElementById('area-influencia-visibility');
-        const delegacionesListDiv = document.getElementById('delegaciones-list');
 
-        if (typeof barriosData !== 'undefined') {
-            barriosGeoJSON = barriosData;
-        }
-        if (!delegacionesLayerGroup && typeof delegacionesData !== 'undefined') {
-            initDelegaciones();
+        if (!areaInfluenciaLayerGroup) {
+            initAreaInfluencia();
         }
 
         if (!isAreaInfluenciaActive) {
@@ -2083,89 +2130,27 @@
                 icon.classList.add('on');
             }
 
-            // 1. Crear / agregar capa independiente de Área de Influencia con NUEVO COLOR (cyan/azul)
-            if (!areaInfluenciaLayerGroup && barriosGeoJSON) {
-                const targetBarrios = ['white', 'justo', 'saladero', 'delfina', 'paraguaya', '26'];
-                areaInfluenciaLayerGroup = L.geoJSON(barriosGeoJSON, {
-                    filter: (feature) => {
-                        const nom = (feature.properties?.nom || '').toLowerCase();
-                        return targetBarrios.some(term => nom.includes(term));
-                    },
-                    style: {
-                        color: '#0288d1',
-                        weight: 3,
-                        fillColor: '#00acc1',
-                        fillOpacity: 0.4
-                    },
-                    onEachFeature: (feature, layer) => {
-                        const center = getLayerCenter(layer);
-                        let content = `<b>${feature.properties.nom || 'Barrio Proceso APELL'}</b>`;
-                        if (center) {
-                            content += renderPopupRouteButtons(center.lat, center.lng);
-                        }
-                        layer.bindPopup(content);
-
-                        const nameUpper = (feature.properties.nom || '').toUpperCase();
-                        if (nameUpper) {
-                            layer.bindTooltip(nameUpper, {
-                                permanent: true,
-                                direction: 'center',
-                                className: 'polygon-label area-influencia-label'
-                            });
-                        }
-                    }
-                });
-            }
-
             if (areaInfluenciaLayerGroup && !map.hasLayer(areaInfluenciaLayerGroup)) {
-                areaInfluenciaLayerGroup.addTo(map);
+                map.addLayer(areaInfluenciaLayerGroup);
             }
 
-            // 2. Activar la subcapa de Delegación Municipal de Ingeniero White
-            if (delegacionesLayerGroup) {
-                delegacionesLayerGroup.eachLayer(l => {
-                    const nom = (l.feature?.properties?.nom || '').toLowerCase();
-                    if (nom.includes('white') || nom.includes('ingeniero')) {
-                        if (!map.hasLayer(l)) {
-                            map.addLayer(l);
-                        }
-                        l.setStyle({
-                            color: '#0288d1',
-                            weight: 3,
-                            fillColor: '#00acc1',
-                            fillOpacity: 0.5
-                        });
-                    }
-                });
-            }
-
-            // Marcar activa la subcapa en la lista del sidebar de delegaciones
-            if (delegacionesListDiv) {
-                const subItems = delegacionesListDiv.querySelectorAll('.sub-layer-item');
-                subItems.forEach(item => {
-                    if (item.innerText.toLowerCase().includes('white') || item.innerText.toLowerCase().includes('ingeniero')) {
-                        item.classList.add('active');
-                    }
-                });
-            }
-            updateMainLayerVisibilityState('delegaciones');
-
-            // 3. Zoom / fitBounds a la zona de Ingeniero White y abrir popup
-            if (areaInfluenciaLayerGroup) {
-                let ingWhiteBarrioLayer = null;
-                areaInfluenciaLayerGroup.eachLayer(l => {
-                    const nom = (l.feature?.properties?.nom || '').toLowerCase();
-                    if (nom.includes('white') || nom.includes('ingeniero')) {
-                        ingWhiteBarrioLayer = l;
-                    }
-                });
-
-                if (ingWhiteBarrioLayer) {
-                    map.fitBounds(ingWhiteBarrioLayer.getBounds(), { padding: [50, 50], maxZoom: 15, animate: true, duration: 0.25 });
-                    ingWhiteBarrioLayer.openPopup();
-                } else {
-                    map.fitBounds(areaInfluenciaLayerGroup.getBounds(), { padding: [50, 50], animate: true, duration: 0.25 });
+            if (ingWhiteDelegationLayer) {
+                if (!map.hasLayer(ingWhiteDelegationLayer)) {
+                    map.addLayer(ingWhiteDelegationLayer);
                 }
+                ingWhiteDelegationLayer.setStyle({
+                    color: '#0288d1',
+                    weight: 3,
+                    fillColor: '#00acc1',
+                    fillOpacity: 0.5
+                });
+            }
+
+            if (ingWhiteBarrioLayer) {
+                map.fitBounds(ingWhiteBarrioLayer.getBounds(), { padding: [50, 50], maxZoom: 15, animate: false });
+                ingWhiteBarrioLayer.openPopup();
+            } else if (areaInfluenciaLayerGroup) {
+                map.fitBounds(areaInfluenciaLayerGroup.getBounds(), { padding: [50, 50], animate: false });
             }
         } else {
             isAreaInfluenciaActive = false;
@@ -2176,31 +2161,16 @@
                 icon.classList.remove('on');
             }
 
-            // Quitar capa de Área de Influencia
             if (areaInfluenciaLayerGroup && map.hasLayer(areaInfluenciaLayerGroup)) {
                 map.removeLayer(areaInfluenciaLayerGroup);
             }
 
-            // Restaurar Delegación Municipal de Ingeniero White a su estilo original y estado normal
-            if (delegacionesLayerGroup) {
-                delegacionesLayerGroup.eachLayer(l => {
-                    const nom = (l.feature?.properties?.nom || '').toLowerCase();
-                    if (nom.includes('white') || nom.includes('ingeniero')) {
-                        l.setStyle({ color: '#00796b', weight: 2, fillColor: '#009688', fillOpacity: 0.3 });
-                        map.removeLayer(l);
-                    }
-                });
+            if (ingWhiteDelegationLayer) {
+                ingWhiteDelegationLayer.setStyle({ color: '#00796b', weight: 2, fillColor: '#009688', fillOpacity: 0.3 });
+                if (!isDelegacionesVisible && map.hasLayer(ingWhiteDelegationLayer)) {
+                    map.removeLayer(ingWhiteDelegationLayer);
+                }
             }
-
-            if (delegacionesListDiv) {
-                const subItems = delegacionesListDiv.querySelectorAll('.sub-layer-item');
-                subItems.forEach(item => {
-                    if (item.innerText.toLowerCase().includes('white') || item.innerText.toLowerCase().includes('ingeniero')) {
-                        item.classList.remove('active');
-                    }
-                });
-            }
-            updateMainLayerVisibilityState('delegaciones');
         }
     }
 
@@ -2573,6 +2543,7 @@
     initMangas();
     initPuntosEncuentro();
     initSirenas();
+    initAreaInfluencia();
 
     // --- NUEVAS FUNCIONALIDADES: GEOLOCALIZACIÓN, RUTAS Y SIMULACIÓN DE VIENTO ---
 
