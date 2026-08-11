@@ -451,6 +451,16 @@
       color: #1b5e20 !important;
       text-shadow: 1.5px 1.5px 2px #ffffff, -1.5px -1.5px 2px #ffffff, 1.5px -1.5px 2px #ffffff, -1.5px 1.5px 2px #ffffff, 0 0 4px #ffffff !important;
     }
+    .area-influencia-label {
+      color: #01579b !important;
+      text-shadow: 1.5px 1.5px 2px #ffffff, -1.5px -1.5px 2px #ffffff, 1.5px -1.5px 2px #ffffff, -1.5px 1.5px 2px #ffffff, 0 0 4px #ffffff !important;
+      opacity: 0.95 !important;
+      visibility: visible !important;
+      font-size: 0.62rem !important;
+      font-weight: 600 !important;
+      max-width: 85px !important;
+      transition: opacity 0.3s ease, transform 0.3s ease !important;
+    }
     .empresas-label {
       color: #880e4f !important;
       text-shadow: 1.5px 1.5px 2px #ffffff, -1.5px -1.5px 2px #ffffff, 1.5px -1.5px 2px #ffffff, -1.5px 1.5px 2px #ffffff, 0 0 4px #ffffff !important;
@@ -2094,6 +2104,15 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+
+                        const nameUpper = (feature.properties.nom || '').toUpperCase();
+                        if (nameUpper) {
+                            layer.bindTooltip(nameUpper, {
+                                permanent: true,
+                                direction: 'center',
+                                className: 'polygon-label area-influencia-label'
+                            });
+                        }
                     }
                 });
             }
@@ -2142,10 +2161,10 @@
                 });
 
                 if (ingWhiteBarrioLayer) {
-                    map.fitBounds(ingWhiteBarrioLayer.getBounds(), { padding: [50, 50], maxZoom: 15 });
+                    map.fitBounds(ingWhiteBarrioLayer.getBounds(), { padding: [50, 50], maxZoom: 15, animate: true, duration: 0.25 });
                     ingWhiteBarrioLayer.openPopup();
                 } else {
-                    map.fitBounds(areaInfluenciaLayerGroup.getBounds(), { padding: [50, 50] });
+                    map.fitBounds(areaInfluenciaLayerGroup.getBounds(), { padding: [50, 50], animate: true, duration: 0.25 });
                 }
             }
         } else {
