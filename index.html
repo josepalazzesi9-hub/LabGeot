@@ -430,7 +430,7 @@
       border: none !important;
       box-shadow: none !important;
       backdrop-filter: none !important;
-      font-weight: 600 !important;
+      font-weight: 400 !important;
       font-family: 'Outfit', sans-serif, system-ui;
       text-align: center;
       white-space: normal !important;
@@ -447,6 +447,22 @@
     .polygon-label::before, .polygon-label::after {
       display: none !important;
     }
+    .feature-label {
+      background: rgba(255, 255, 255, 0.92) !important;
+      border: 1px solid rgba(0, 0, 0, 0.15) !important;
+      border-radius: 4px !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+      color: #222222 !important;
+      font-weight: 400 !important;
+      font-family: 'Outfit', sans-serif, system-ui;
+      font-size: 0.75rem !important;
+      padding: 2px 6px !important;
+      pointer-events: none !important;
+      white-space: nowrap !important;
+    }
+    .feature-label::before, .feature-label::after {
+      display: none !important;
+    }
     .barrios-label {
       color: #1b5e20 !important;
       text-shadow: 1.5px 1.5px 2px #ffffff, -1.5px -1.5px 2px #ffffff, 1.5px -1.5px 2px #ffffff, -1.5px 1.5px 2px #ffffff, 0 0 4px #ffffff !important;
@@ -457,7 +473,7 @@
       opacity: 0.95 !important;
       visibility: visible !important;
       font-size: 0.62rem !important;
-      font-weight: 600 !important;
+      font-weight: 400 !important;
       max-width: 85px !important;
       transition: opacity 0.3s ease, transform 0.3s ease !important;
     }
@@ -1322,6 +1338,9 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+                        if (props.nom) {
+                            layer.bindTooltip(props.nom, { permanent: true, direction: 'top', className: 'feature-label' });
+                        }
                     }
                 });
             }
@@ -1391,6 +1410,9 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+                        if (props.Nombre) {
+                            layer.bindTooltip(props.Nombre, { permanent: true, direction: 'top', className: 'feature-label' });
+                        }
                     }
                 });
             }
@@ -1450,6 +1472,9 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+                        if (feature.properties.Name) {
+                            layer.bindTooltip(feature.properties.Name, { permanent: true, direction: 'center', className: 'polygon-label barrios-label' });
+                        }
                     }
                 });
             }
@@ -1518,6 +1543,9 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+                        if (feature.properties.nom) {
+                            layer.bindTooltip(feature.properties.nom, { permanent: true, direction: 'top', className: 'feature-label' });
+                        }
                     }
                 });
             }
@@ -1653,6 +1681,9 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+                        if (props.nom) {
+                            layer.bindTooltip(props.nom, { permanent: true, direction: 'top', className: 'feature-label' });
+                        }
                     }
                 });
             }
@@ -1820,6 +1851,9 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+                        if (props.inst) {
+                            layer.bindTooltip(props.inst, { permanent: true, direction: 'top', className: 'feature-label' });
+                        }
                     }
                 });
             }
@@ -1882,6 +1916,10 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+                        const labelText = props.ins || props.direc;
+                        if (labelText) {
+                            layer.bindTooltip(labelText, { permanent: true, direction: 'top', className: 'feature-label' });
+                        }
                     }
                 });
             }
@@ -1944,6 +1982,9 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
+                        if (props.Inst) {
+                            layer.bindTooltip(props.Inst, { permanent: true, direction: 'top', className: 'feature-label' });
+                        }
                     }
                 });
             }
@@ -2544,6 +2585,7 @@
     initPuntosEncuentro();
     initSirenas();
     initAreaInfluencia();
+    toggleAreaInfluencia();
 
     // --- NUEVAS FUNCIONALIDADES: GEOLOCALIZACIÓN, RUTAS Y SIMULACIÓN DE VIENTO ---
 
@@ -3021,12 +3063,71 @@
       }
     }
 
+    // Lógica para abrir/cerrar modal de bienvenida e instrucciones
+    function openWelcomeModal() {
+      const modal = document.getElementById('welcome-modal-backdrop');
+      if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeWelcomeModal() {
+      const modal = document.getElementById('welcome-modal-backdrop');
+      if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    function closeWelcomeModalOnBackdrop(e) {
+      if (e.target.id === 'welcome-modal-backdrop') {
+        closeWelcomeModal();
+      }
+    }
+
+    // Abrir automáticamente el modal de bienvenida al cargar la página
+    document.addEventListener('DOMContentLoaded', function () {
+      openWelcomeModal();
+    });
+
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         closeApellModal();
+        closeWelcomeModal();
       }
     });
   </script>
+
+  <!-- Modal de Bienvenida e Instrucciones de Uso -->
+  <div id="welcome-modal-backdrop" class="apell-modal-backdrop active" onclick="closeWelcomeModalOnBackdrop(event)">
+    <div class="apell-modal-container" role="dialog" aria-labelledby="welcome-modal-title" aria-modal="true">
+      <div class="apell-modal-header">
+        <div class="apell-modal-title-wrapper">
+          <i class="fas fa-map-marked-alt apell-modal-icon"></i>
+          <h2 id="welcome-modal-title">Bienvenido a la Plataforma del Proceso APELL</h2>
+        </div>
+        <button class="apell-modal-close-btn" onclick="closeWelcomeModal()" aria-label="Cerrar modal" title="Cerrar (Esc)">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="apell-modal-body">
+        <p class="apell-modal-intro" style="margin-bottom: 16px;">
+          ¡Bienvenido al visor interactivo del Proceso APELL! Esta herramienta geográfica oficial fue desarrollada por LabGEOT para permitir la exploración territorial de la zona de influencia industrial en Bahía Blanca e Ingeniero White, así como visualizar los polígonos de los barrios, la ubicación de las sirenas de emergencia y la infraestructura de respuesta ante contingencias.
+        </p>
+        <p class="apell-modal-intro" style="margin-bottom: 0;">
+          Para navegar por la página, utilice el menú desplegable en el panel lateral para activar o desactivar capas de información (barrios, instituciones, centros de respuesta y puntos de encuentro). También puede utilizar los botones de acción rápida para calcular rutas de evacuación, consultar la dirección del viento en tiempo real y la ubicación de las mangas, o localizar su posición actual en el mapa.
+        </p>
+      </div>
+
+      <div class="apell-modal-footer">
+        <button class="btn-fill" onclick="closeWelcomeModal()" style="cursor: pointer;">
+          <i class="fas fa-compass" style="margin-right: 6px;"></i> Entendido, explorar mapa
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal Informativo APELL -->
   <div id="apell-info-modal-backdrop" class="apell-modal-backdrop" onclick="closeApellModalOnBackdrop(event)">
