@@ -191,6 +191,17 @@
       </div>
 
       <div class="card">
+        <div class="card-icon" style="color: #00a884;"><i class="fas fa-notes-medical"></i></div>
+        <h2 class="card-title">Centros de Salud</h2>
+        <p class="card-desc">Polígonos digitalizados de la infraestructura de salud pública de Bahía Blanca (Hospitales, Unidades Sanitarias, CAPS y Salas Médicas).</p>
+        <div class="card-meta">
+          <span><i class="fas fa-file-code"></i> GeoJSON</span>
+          <span><i class="fas fa-weight-hanging"></i> 41.8 KB</span>
+        </div>
+        <a href="data/Centros de Salud - Digitalización.geojson" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar Archivo</a>
+      </div>
+
+      <div class="card">
         <div class="card-icon"><i class="fas fa-utensils"></i></div>
         <h2 class="card-title">Comedores Comunitarios</h2>
         <p class="card-desc">Puntos de asistencia alimentaria y apoyo logístico para la comunidad y equipos de respuesta.</p>
@@ -294,6 +305,7 @@
 
   <script src="data/barrios.js?v=2"></script>
   <script src="data/centros.js?v=2"></script>
+  <script src="data/centros_salud.js?v=1"></script>
   <script src="data/comedores.js?v=2"></script>
   <script src="data/deportivos.js?v=2"></script>
   <script src="data/respuesta.js?v=2"></script>
@@ -326,6 +338,7 @@
     const descargas = [
       { selector: 'a[href*="BARRIOS_PROCESO_APELL.json"]', data: typeof barriosData !== 'undefined' ? barriosData : null, filename: 'BARRIOS_PROCESO_APELL.json' },
       { selector: 'a[href*="Centro de evacuados"]', data: typeof centrosData !== 'undefined' ? centrosData : null, filename: 'Centro de evacuados - Digitalización.json' },
+      { selector: 'a[href*="Centros de Salud"]', data: typeof centrosSaludData !== 'undefined' ? centrosSaludData : null, filename: 'Centros de Salud - Digitalización.geojson' },
       { selector: 'a[href*="comedores_com.json"]', data: typeof comedoresData !== 'undefined' ? comedoresData : null, filename: 'comedores_com.json' },
       { selector: 'a[href*="Estab_deportivos.json"]', data: typeof deportivosData !== 'undefined' ? deportivosData : null, filename: 'Estab_deportivos.json' },
       { selector: 'a[href*="Sistema de respuesta primaria"]', data: typeof respuestaData !== 'undefined' ? respuestaData : null, filename: 'Sistema de respuesta primaria - Digitalización.json' },

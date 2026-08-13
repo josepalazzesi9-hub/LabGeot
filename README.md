@@ -7,9 +7,10 @@
 ## 🗺️ Funcionalidades
 
 - Visualización de capas GeoJSON sobre mapa interactivo (Leaflet.js)
-- Cinco capas temáticas:
+- Capas temáticas:
   - **Barrios Proceso APELL** — Polígonos de los barrios del área de influencia
   - **Centros de Evacuados** — Refugios y puntos de concentración durante emergencias
+  - **Centros de Salud** — Infraestructura de salud pública (Hospitales, Unidades Sanitarias, CAPS, Salas Médicas)
   - **Comedores Comunitarios** — Puntos de asistencia alimentaria
   - **Establecimientos Deportivos** — Clubes e instalaciones como zonas de concentración masiva
   - **Respuesta Primaria** — Bomberos, policía, defensa civil y atención médica
@@ -25,12 +26,13 @@ web/client/
 ├── index.html          # Visor principal del mapa
 ├── descargas.html      # Portal de descargas de capas
 └── data/
-    ├── barrios.js      # Datos GeoJSON - Barrios APELL (EPSG:3857)
-    ├── centros.js      # Datos GeoJSON - Centros de evacuados (EPSG:4326)
+    ├── barrios.js      # Datos GeoJSON - Barrios APELL
+    ├── centros.js      # Datos GeoJSON - Centros de evacuados
+    ├── centros_salud.js # Datos GeoJSON - Centros de Salud (EPSG:4326)
     ├── comedores.js    # Datos GeoJSON - Comedores comunitarios (EPSG:4326)
-    ├── deportivos.js   # Datos GeoJSON - Establecimientos deportivos (EPSG:3857)
+    ├── deportivos.js   # Datos GeoJSON - Establecimientos deportivos
     ├── respuesta.js    # Datos GeoJSON - Respuesta primaria (EPSG:4326)
-    └── *.json          # Archivos GeoJSON originales para descarga
+    └── *.json/*.geojson # Archivos GeoJSON originales para descarga
 ```
 
 ## 🚀 Uso

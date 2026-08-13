@@ -907,6 +907,16 @@
             <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando centros...</div>
         </div>
 
+        <div class="layer-item" id="centros_salud-btn" onclick="toggleDropdown('centros_salud')">
+            <i class="fas fa-chevron-right" id="centros_salud-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-notes-medical" style="color: var(--primary-color);"></i>
+            <span class="layer-name">Centros de Salud</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="centros_salud-visibility" onclick="event.stopPropagation(); toggleLayer('centros_salud')"></i>
+        </div>
+        <div class="sub-layers" id="centros_salud-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando centros de salud...</div>
+        </div>
+
 
         <div class="layer-item" id="comedores-btn" onclick="toggleDropdown('comedores')">
             <i class="fas fa-chevron-right" id="comedores-chevron" style="width:10px; margin-right:10px;"></i>
@@ -1130,6 +1140,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="data/barrios.js?v=2"></script>
   <script src="data/centros.js?v=2"></script>
+  <script src="data/centros_salud.js?v=1"></script>
   <script src="data/comedores.js?v=2"></script>
   <script src="data/deportivos.js?v=2"></script>
   <script src="data/respuesta.js?v=2"></script>
@@ -1203,6 +1214,10 @@
     let centrosGeoJSON = null;
     let centrosLayerGroup = null;
     let isCentrosVisible = false;
+
+    let centrosSaludGeoJSON = null;
+    let centrosSaludLayerGroup = null;
+    let isCentrosSaludVisible = false;
 
     let comedoresGeoJSON = null;
     let comedoresLayerGroup = null;
@@ -1378,6 +1393,72 @@
             });
         } catch(e) {
             console.error("Error cargando centros:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
+    function initCentrosSalud() {
+        const listDiv = document.getElementById('centros_salud-list');
+        try {
+            if(typeof centrosSaludData === 'undefined') {
+                throw new Error("El archivo centros_salud.js no se cargó.");
+            }
+
+            centrosSaludGeoJSON = centrosSaludData;
+            if(!centrosSaludLayerGroup) {
+                centrosSaludLayerGroup = L.geoJSON(centrosSaludGeoJSON, {
+                    style: { color: '#00897b', weight: 2, fillColor: '#00a884', fillOpacity: 0.35 },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const center = getLayerCenter(layer);
+                        let content = `<b>${props.nom || 'Centro de Salud'}</b><br>Dirección: ${props.dir || '-'}<br>Tipo: ${props.tip || '-'}`;
+                        if (props.num) {
+                            content += `<br>Teléfono: ${props.num}`;
+                        }
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        layer.bindPopup(content);
+                        if (props.nom) {
+                            layer.bindTooltip(props.nom, { permanent: true, direction: 'top', className: 'feature-label' });
+                        }
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...centrosSaludGeoJSON.features].sort((a,b) => 
+                (a.properties.nom || "").localeCompare(b.properties.nom || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.nom || 'Centro Sin Nombre';
+                const dir = props.dir || 'Sin dirección';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    let targetLayer;
+                    centrosSaludLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    if (!targetLayer) return;
+
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
+                    } else {
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
+                    }
+                    zoomACentroSalud(feature);
+                    updateMainLayerVisibilityState('centros_salud');
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando centros de salud:", e);
             listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
         }
     }
@@ -2074,6 +2155,7 @@
     function setLayerVisibleVar(capa, visible) {
         if (capa === 'barrios') isBarriosVisible = visible;
         else if (capa === 'centros') isCentrosVisible = visible;
+        else if (capa === 'centros_salud') isCentrosSaludVisible = visible;
         else if (capa === 'comedores') isComedoresVisible = visible;
         else if (capa === 'deportivos') isDeportivosVisible = visible;
         else if (capa === 'respuesta') isRespuestaVisible = visible;
@@ -2088,6 +2170,7 @@
     function getLayerGroupByName(capa) {
         if (capa === 'barrios') return barriosLayerGroup;
         if (capa === 'centros') return centrosLayerGroup;
+        if (capa === 'centros_salud') return centrosSaludLayerGroup;
         if (capa === 'comedores') return comedoresLayerGroup;
         if (capa === 'deportivos') return deportivosLayerGroup;
         if (capa === 'respuesta') return respuestaLayerGroup;
@@ -2238,14 +2321,21 @@
             }
         }
 
-        if (activeItems.length > 0) {
-            // Apagar todos los elementos de esta capa
+        const isCurrentlyOn = (activeItems.length > 0) || (btn && btn.classList.contains('active')) || (icon && icon.classList.contains('on'));
+
+        if (isCurrentlyOn) {
+            // Apagar todos los elementos y subcapas de esta capa
             if (btn) btn.classList.remove('active');
             if (icon) {
                 icon.classList.replace('fa-eye', 'fa-eye-slash');
                 icon.classList.remove('on');
             }
-            if (layerGroup) map.removeLayer(layerGroup);
+            if (layerGroup) {
+                if (map.hasLayer(layerGroup)) map.removeLayer(layerGroup);
+                layerGroup.eachLayer(l => {
+                    if (map.hasLayer(l)) map.removeLayer(l);
+                });
+            }
             listItems.forEach(el => el.classList.remove('active'));
             setLayerVisibleVar(capa, false);
         } else {
@@ -2255,7 +2345,12 @@
                 icon.classList.replace('fa-eye-slash', 'fa-eye');
                 icon.classList.add('on');
             }
-            if (layerGroup) layerGroup.addTo(map);
+            if (layerGroup) {
+                if (!map.hasLayer(layerGroup)) map.addLayer(layerGroup);
+                layerGroup.eachLayer(l => {
+                    if (!map.hasLayer(l)) map.addLayer(l);
+                });
+            }
             listItems.forEach(el => el.classList.add('active'));
             setLayerVisibleVar(capa, true);
         }
@@ -2276,6 +2371,16 @@
         centrosLayerGroup.eachLayer(layer => {
             if(layer.feature === featureBuscar) {
                 map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
+                layer.openPopup();
+            }
+        });
+    }
+
+    function zoomACentroSalud(featureBuscar) {
+        if(!centrosSaludLayerGroup) return;
+        centrosSaludLayerGroup.eachLayer(layer => {
+            if(layer.feature === featureBuscar) {
+                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 16 });
                 layer.openPopup();
             }
         });
@@ -2396,6 +2501,13 @@
                 }
             });
         }
+        if (centrosSaludGeoJSON) {
+            centrosSaludGeoJSON.features.forEach(f => {
+                if (f.properties.nom && f.properties.nom.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'centros_salud', feature: f, title: f.properties.nom, type: 'Centro de Salud' });
+                }
+            });
+        }
         if (comedoresGeoJSON) {
             comedoresGeoJSON.features.forEach(f => {
                 if (f.properties.Nombre && f.properties.Nombre.toLowerCase().includes(query)) {
@@ -2473,6 +2585,7 @@
                     
                     if (m.layer === 'barrios' && !isBarriosVisible) toggleLayer('barrios');
                     if (m.layer === 'centros' && !isCentrosVisible) toggleLayer('centros');
+                    if (m.layer === 'centros_salud' && !isCentrosSaludVisible) toggleLayer('centros_salud');
                     if (m.layer === 'comedores' && !isComedoresVisible) toggleLayer('comedores');
                     if (m.layer === 'deportivos' && !isDeportivosVisible) toggleLayer('deportivos');
                     if (m.layer === 'respuesta' && !isRespuestaVisible) toggleLayer('respuesta');
@@ -2486,6 +2599,7 @@
                     setTimeout(() => {
                         if (m.layer === 'barrios') zoomABarrio(m.feature);
                         if (m.layer === 'centros') zoomACentro(m.feature);
+                        if (m.layer === 'centros_salud') zoomACentroSalud(m.feature);
                         if (m.layer === 'comedores') zoomAComedor(m.feature);
                         if (m.layer === 'deportivos') zoomADeportivo(m.feature);
                         if (m.layer === 'respuesta') zoomARespuesta(m.feature);
@@ -2575,6 +2689,7 @@
 
     initBarrios();
     initCentros();
+    initCentrosSalud();
     initComedores();
     initDeportivos();
     initRespuesta();
