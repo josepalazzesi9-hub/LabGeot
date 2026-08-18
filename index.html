@@ -968,7 +968,7 @@
         <div class="layer-item" id="empresas-btn" onclick="toggleDropdown('empresas')">
             <i class="fas fa-chevron-right" id="empresas-chevron" style="width:10px; margin-right:10px;"></i>
             <i class="fas fa-industry"></i>
-            <span class="layer-name">Empresas polo petroquimico</span>
+            <span class="layer-name">Empresas Polo Petroquímico</span>
             <i class="fas fa-eye-slash layer-visibility-icon" id="empresas-visibility" onclick="event.stopPropagation(); toggleLayer('empresas')"></i>
         </div>
         <div class="sub-layers" id="empresas-list">
@@ -2546,7 +2546,7 @@
         if (empresasGeoJSON) {
             empresasGeoJSON.features.forEach(f => {
                 if (f.properties.Empresaa && f.properties.Empresaa.toLowerCase().includes(query)) {
-                    matches.push({ layer: 'empresas', feature: f, title: f.properties.Empresaa, type: 'Empresas polo petroquimico' });
+                    matches.push({ layer: 'empresas', feature: f, title: f.properties.Empresaa, type: 'Empresas Polo Petroquímico' });
                 }
             });
         }
