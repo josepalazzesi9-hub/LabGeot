@@ -1171,13 +1171,9 @@
       </div>
 
       <div id="basemap-selector" class="basemap-selector">
-        <div class="basemap-option selected" onclick="setBasemap('carto', this)">
-            <img src="https://a.basemaps.cartocdn.com/rastertiles/voyager/13/2767/4943.png" alt="Carto Light">
-            <span>Carto Light</span>
-        </div>
-        <div class="basemap-option" onclick="setBasemap('osm', this)">
-            <img src="https://a.tile.openstreetmap.org/13/2767/4943.png" alt="OSM">
-            <span>OSM</span>
+        <div class="basemap-option selected" onclick="setBasemap('osm', this)">
+            <img src="https://a.tile.openstreetmap.org/13/2767/4943.png" alt="OpenStreetMap">
+            <span>OpenStreetMap</span>
         </div>
         <div class="basemap-option" onclick="setBasemap('gstreets', this)">
             <img src="https://mt0.google.com/vt/lyrs=m&hl=es&x=2767&y=4943&z=13" alt="Google Streets">
@@ -1217,13 +1213,13 @@
     };
 
     const basemaps = {
-        carto: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { ...basemapOptions, maxZoom: 19, attribution: 'Proceso APELL' }),
         osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { ...basemapOptions, maxZoom: 19, attribution: '© OpenStreetMap' }),
         gstreets: L.tileLayer('https://mt0.google.com/vt/lyrs=m&hl=es&x={x}&y={y}&z={z}', { ...basemapOptions, maxZoom: 20, attribution: 'Google' }),
-        gsatellite: L.tileLayer('https://mt0.google.com/vt/lyrs=s&hl=es&x={x}&y={y}&z={z}', { ...basemapOptions, maxZoom: 20, attribution: 'Google' })
+        gsatellite: L.tileLayer('https://mt0.google.com/vt/lyrs=s&hl=es&x={x}&y={y}&z={z}', { ...basemapOptions, maxZoom: 20, attribution: 'Google' }),
+        carto: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { ...basemapOptions, maxZoom: 19, attribution: '© OpenStreetMap' })
     };
 
-    let currentBasemap = basemaps.carto;
+    let currentBasemap = basemaps.osm;
     currentBasemap.addTo(map);
 
     // Actualizar escala dinamicamente
