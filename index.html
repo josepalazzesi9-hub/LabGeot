@@ -148,7 +148,28 @@
   .layers-list {
     flex: 1;
     overflow-y: auto;
-    padding: 10px 0;
+    padding: 0;
+  }
+
+  .layer-group-title {
+    padding: 10px 15px 8px 15px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--secondary-color);
+    letter-spacing: 0.3px;
+    background: #e8f5e9;
+    border-top: 1px solid #c8e6c9;
+    border-bottom: 1px solid #c8e6c9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+    margin-top: 10px;
+  }
+
+  .layer-group-title:first-child {
+    margin-top: 0;
+    border-top: none;
   }
 
   .layer-item {
@@ -438,7 +459,6 @@
       max-width: 90px;
       line-height: 1.15;
       pointer-events: none !important;
-      text-transform: uppercase;
       letter-spacing: 0.3px;
       opacity: 0;
       visibility: hidden;
@@ -453,15 +473,39 @@
       border-radius: 4px !important;
       box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
       color: #222222 !important;
-      font-weight: 400 !important;
+      font-weight: 500 !important;
       font-family: 'Outfit', sans-serif, system-ui;
       font-size: 0.75rem !important;
       padding: 2px 6px !important;
       pointer-events: none !important;
       white-space: nowrap !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      transition: opacity 0.25s ease, transform 0.25s ease !important;
     }
     .feature-label::before, .feature-label::after {
       display: none !important;
+    }
+
+    .leaflet-container.zoom-close .feature-label {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    .marker-icon-inner {
+      width: 24px;
+      height: 24px;
+      font-size: 11px;
+    }
+    .leaflet-container.zoom-feature-labels-on .marker-icon-inner {
+      width: 28px;
+      height: 28px;
+      font-size: 13px;
+    }
+    .leaflet-container.zoom-close .marker-icon-inner {
+      width: 32px;
+      height: 32px;
+      font-size: 15px;
     }
     .barrios-label {
       color: #1b5e20 !important;
@@ -487,6 +531,16 @@
     }
 
     /* Layer & Zoom specific visibility thresholds */
+    .leaflet-container.zoom-feature-labels-on .feature-label {
+      opacity: 0.9 !important;
+      visibility: visible !important;
+      font-size: 0.72rem !important;
+    }
+    .leaflet-container.zoom-close .feature-label {
+      opacity: 1 !important;
+      font-size: 0.82rem !important;
+    }
+
     .leaflet-container.zoom-delegaciones-on .delegaciones-label {
       opacity: 0.9 !important;
       visibility: visible !important;
@@ -920,7 +974,7 @@
     </div>
     <div class="header-buttons">
       <button class="btn-outline" onclick="openApellModal()" title="Conocer más sobre el Proceso APELL Bahía Blanca" style="cursor: pointer; font-family: inherit;"><i class="fas fa-info-circle"></i><span class="btn-text">Conoce más</span></button>
-      <a href="descargas.html" class="btn-fill" title="Descargar Capas en formato GeoJSON"><i class="fas fa-download"></i><span class="btn-text">Portal de Descargas</span></a>
+      <a href="descargas.html" class="btn-fill" title="Descargar capas en formato GeoJSON"><i class="fas fa-download"></i><span class="btn-text">Portal de descargas</span></a>
     </div>
   </header>
 
@@ -942,111 +996,35 @@
       </div>
       <div class="layers-list">
         
-        <div class="layer-item" id="barrios-btn" onclick="toggleDropdown('barrios')">
-            <i class="fas fa-chevron-right" id="barrios-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-map-marked-alt"></i>
-            <span class="layer-name">Barrios Proceso APELL</span>
-            <i class="fas fa-eye-slash layer-visibility-icon" id="barrios-visibility" onclick="event.stopPropagation(); toggleLayer('barrios')"></i>
+        <!-- Área de influencia Shortcut -->
+        <div class="layer-item" id="area-influencia-btn" onclick="toggleAreaInfluencia()" style="font-weight: 500;">
+            <i class="fas fa-layer-group" style="color: var(--primary-color);"></i>
+            <span class="layer-name" style="font-weight: 600;">Área de influencia</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="area-influencia-visibility"></i>
         </div>
-        <div class="sub-layers" id="barrios-list">
-            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando barrios...</div>
+
+        <!-- Segmentación 1: Información proceso APELL -->
+        <div class="layer-group-title">
+          <i class="fas fa-shield-alt"></i> Información proceso APELL
         </div>
 
         <div class="layer-item" id="centros-btn" onclick="toggleDropdown('centros')">
             <i class="fas fa-chevron-right" id="centros-chevron" style="width:10px; margin-right:10px;"></i>
             <i class="fas fa-hands-helping"></i>
-            <span class="layer-name">Centros de Evacuados</span>
+            <span class="layer-name">Centros de evacuados</span>
             <i class="fas fa-eye-slash layer-visibility-icon" id="centros-visibility" onclick="event.stopPropagation(); toggleLayer('centros')"></i>
         </div>
         <div class="sub-layers" id="centros-list">
             <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando centros...</div>
         </div>
 
-        <div class="layer-item" id="centros_salud-btn" onclick="toggleDropdown('centros_salud')">
-            <i class="fas fa-chevron-right" id="centros_salud-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-notes-medical" style="color: var(--primary-color);"></i>
-            <span class="layer-name">Centros de Salud</span>
-            <i class="fas fa-eye-slash layer-visibility-icon" id="centros_salud-visibility" onclick="event.stopPropagation(); toggleLayer('centros_salud')"></i>
-        </div>
-        <div class="sub-layers" id="centros_salud-list">
-            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando centros de salud...</div>
-        </div>
-
-
-        <div class="layer-item" id="comedores-btn" onclick="toggleDropdown('comedores')">
-            <i class="fas fa-chevron-right" id="comedores-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-utensils"></i>
-            <span class="layer-name">Comedores Comunitarios</span>
-            <i class="fas fa-eye-slash layer-visibility-icon" id="comedores-visibility" onclick="event.stopPropagation(); toggleLayer('comedores')"></i>
-        </div>
-        <div class="sub-layers" id="comedores-list">
-            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando comedores...</div>
-        </div>
-
-        <div class="layer-item" id="deportivos-btn" onclick="toggleDropdown('deportivos')">
-            <i class="fas fa-chevron-right" id="deportivos-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-futbol"></i>
-            <span class="layer-name">Establecimientos Deportivos</span>
-            <i class="fas fa-eye-slash layer-visibility-icon" id="deportivos-visibility" onclick="event.stopPropagation(); toggleLayer('deportivos')"></i>
-        </div>
-        <div class="sub-layers" id="deportivos-list">
-            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
-        </div>
-        <div class="layer-item" id="respuesta-btn" onclick="toggleDropdown('respuesta')">
-            <i class="fas fa-chevron-right" id="respuesta-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-shield-alt"></i>
-            <span class="layer-name">Respuesta Primaria</span>
-            <i class="fas fa-eye-slash layer-visibility-icon" id="respuesta-visibility" onclick="event.stopPropagation(); toggleLayer('respuesta')"></i>
-        </div>
-        <div class="sub-layers" id="respuesta-list">
-            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
-        </div>
-        <div class="layer-item" id="delegaciones-btn" onclick="toggleDropdown('delegaciones')">
-            <i class="fas fa-chevron-right" id="delegaciones-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-landmark"></i>
-            <span class="layer-name">Delegaciones Municipales</span>
-            <i class="fas fa-eye-slash layer-visibility-icon" id="delegaciones-visibility" onclick="event.stopPropagation(); toggleLayer('delegaciones')"></i>
-        </div>
-        <div class="sub-layers" id="delegaciones-list">
-            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
-        </div>
-        <div class="layer-item" id="escuelas-btn" onclick="toggleDropdown('escuelas')">
-            <i class="fas fa-chevron-right" id="escuelas-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-school"></i>
-            <span class="layer-name">Escuelas</span>
-            <i class="fas fa-eye-slash layer-visibility-icon" id="escuelas-visibility" onclick="event.stopPropagation(); toggleLayer('escuelas')"></i>
-        </div>
-        <div class="sub-layers" id="escuelas-list">
-            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
-        </div>
-
-        <div class="layer-item" id="empresas-btn" onclick="toggleDropdown('empresas')">
-            <i class="fas fa-chevron-right" id="empresas-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-industry"></i>
-            <span class="layer-name">Empresas Polo Petroquímico</span>
-            <i class="fas fa-eye-slash layer-visibility-icon" id="empresas-visibility" onclick="event.stopPropagation(); toggleLayer('empresas')"></i>
-        </div>
-        <div class="sub-layers" id="empresas-list">
-            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
-        </div>
-
         <div class="layer-item" id="mangas-btn" onclick="toggleDropdown('mangas')">
             <i class="fas fa-chevron-right" id="mangas-chevron" style="width:10px; margin-right:10px;"></i>
             <i class="fas fa-wind"></i>
-            <span class="layer-name">Mangas de Viento</span>
+            <span class="layer-name">Mangas de viento</span>
             <i class="fas fa-eye-slash layer-visibility-icon" id="mangas-visibility" onclick="event.stopPropagation(); toggleLayer('mangas')"></i>
         </div>
         <div class="sub-layers" id="mangas-list">
-            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
-        </div>
-
-        <div class="layer-item" id="puntos-btn" onclick="toggleDropdown('puntos')">
-            <i class="fas fa-chevron-right" id="puntos-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-users"></i>
-            <span class="layer-name">Puntos de Encuentro</span>
-            <i class="fas fa-eye-slash layer-visibility-icon" id="puntos-visibility" onclick="event.stopPropagation(); toggleLayer('puntos')"></i>
-        </div>
-        <div class="sub-layers" id="puntos-list">
             <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
         </div>
 
@@ -1059,13 +1037,103 @@
         <div class="sub-layers" id="sirenas-list">
             <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
         </div>
-      </div>
 
-      <!-- Área de influencia Shortcut -->
-      <div class="layer-item" id="area-influencia-btn" onclick="toggleAreaInfluencia()" style="border-top: 1px solid #e0e0e0; font-weight: 500;">
-          <i class="fas fa-layer-group" style="color: var(--primary-color);"></i>
-          <span class="layer-name" style="font-weight: 600;">Área de influencia</span>
-          <i class="fas fa-eye-slash layer-visibility-icon" id="area-influencia-visibility"></i>
+        <div class="layer-item" id="puntos-btn" onclick="toggleDropdown('puntos')">
+            <i class="fas fa-chevron-right" id="puntos-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-users"></i>
+            <span class="layer-name">Puntos de encuentro</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="puntos-visibility" onclick="event.stopPropagation(); toggleLayer('puntos')"></i>
+        </div>
+        <div class="sub-layers" id="puntos-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+
+        <div class="layer-item" id="empresas-btn" onclick="toggleDropdown('empresas')">
+            <i class="fas fa-chevron-right" id="empresas-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-industry"></i>
+            <span class="layer-name">Empresas polo petroquímico</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="empresas-visibility" onclick="event.stopPropagation(); toggleLayer('empresas')"></i>
+        </div>
+        <div class="sub-layers" id="empresas-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+
+
+        <!-- Segmentación 2: Información complementaria -->
+        <div class="layer-group-title">
+          <i class="fas fa-map"></i> Información complementaria
+        </div>
+
+        <div class="layer-item" id="barrios-btn" onclick="toggleDropdown('barrios')">
+            <i class="fas fa-chevron-right" id="barrios-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-map-marked-alt"></i>
+            <span class="layer-name">Barrios proceso APELL</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="barrios-visibility" onclick="event.stopPropagation(); toggleLayer('barrios')"></i>
+        </div>
+        <div class="sub-layers" id="barrios-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando barrios...</div>
+        </div>
+
+        <div class="layer-item" id="centros_salud-btn" onclick="toggleDropdown('centros_salud')">
+            <i class="fas fa-chevron-right" id="centros_salud-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-notes-medical" style="color: var(--primary-color);"></i>
+            <span class="layer-name">Centros de salud</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="centros_salud-visibility" onclick="event.stopPropagation(); toggleLayer('centros_salud')"></i>
+        </div>
+        <div class="sub-layers" id="centros_salud-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando centros de salud...</div>
+        </div>
+
+        <div class="layer-item" id="comedores-btn" onclick="toggleDropdown('comedores')">
+            <i class="fas fa-chevron-right" id="comedores-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-utensils"></i>
+            <span class="layer-name">Comedores comunitarios</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="comedores-visibility" onclick="event.stopPropagation(); toggleLayer('comedores')"></i>
+        </div>
+        <div class="sub-layers" id="comedores-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando comedores...</div>
+        </div>
+
+        <div class="layer-item" id="delegaciones-btn" onclick="toggleDropdown('delegaciones')">
+            <i class="fas fa-chevron-right" id="delegaciones-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-landmark"></i>
+            <span class="layer-name">Delegaciones municipales</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="delegaciones-visibility" onclick="event.stopPropagation(); toggleLayer('delegaciones')"></i>
+        </div>
+        <div class="sub-layers" id="delegaciones-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+
+        <div class="layer-item" id="escuelas-btn" onclick="toggleDropdown('escuelas')">
+            <i class="fas fa-chevron-right" id="escuelas-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-school"></i>
+            <span class="layer-name">Escuelas</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="escuelas-visibility" onclick="event.stopPropagation(); toggleLayer('escuelas')"></i>
+        </div>
+        <div class="sub-layers" id="escuelas-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+
+        <div class="layer-item" id="deportivos-btn" onclick="toggleDropdown('deportivos')">
+            <i class="fas fa-chevron-right" id="deportivos-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-futbol"></i>
+            <span class="layer-name">Establecimientos deportivos</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="deportivos-visibility" onclick="event.stopPropagation(); toggleLayer('deportivos')"></i>
+        </div>
+        <div class="sub-layers" id="deportivos-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+
+        <div class="layer-item" id="respuesta-btn" onclick="toggleDropdown('respuesta')">
+            <i class="fas fa-chevron-right" id="respuesta-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-shield-alt"></i>
+            <span class="layer-name">Respuesta primaria</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="respuesta-visibility" onclick="event.stopPropagation(); toggleLayer('respuesta')"></i>
+        </div>
+        <div class="sub-layers" id="respuesta-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+
       </div>
       
       <!-- Custom Origin Selection Widget -->
@@ -1073,11 +1141,11 @@
         <div class="collapsible-widget-header" onclick="toggleWidgetSection('origin')">
           <i class="fas fa-chevron-right collapsible-widget-chevron" id="origin-widget-chevron"></i>
           <i class="fas fa-map-pin" style="color: var(--primary-color);"></i>
-          <span>Origen Personalizado</span>
+          <span>Origen personalizado</span>
         </div>
         <div class="collapsible-widget-body" id="origin-widget-body">
           <button id="custom-origin-toggle-btn" onclick="toggleCustomOriginPickMode()" style="width: 100%; padding: 9px 12px; background: #e8f5e9; color: var(--primary-color); border: 1.5px solid #81c784; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;">
-            <i class="fas fa-crosshairs"></i> <span id="custom-origin-btn-text">Activar Origen en Mapa</span>
+            <i class="fas fa-crosshairs"></i> <span id="custom-origin-btn-text">Activar origen en mapa</span>
           </button>
           <div id="custom-origin-status-box" style="display: none; margin-top: 10px; font-size: 0.8rem; background: #e8f5e9; color: #1b5e20; padding: 8px 10px; border-radius: 6px; border-left: 4px solid var(--primary-color);">
             <div id="custom-origin-status-text" style="font-weight: bold; margin-bottom: 4px; color: var(--primary-color);">Punto fijado en el mapa</div>
@@ -1093,7 +1161,7 @@
         <div class="collapsible-widget-header" onclick="toggleWidgetSection('wind')">
           <i class="fas fa-chevron-right collapsible-widget-chevron" id="wind-widget-chevron"></i>
           <i class="fas fa-wind" style="color: #2e7d32;"></i>
-          <span>Clima y Dirección del Viento</span>
+          <span>Clima y dirección del viento</span>
         </div>
         <div class="collapsible-widget-body" id="wind-widget-body">
           <div id="weather-info" style="font-size: 0.85rem; color: #555; margin-bottom: 12px; display: flex; align-items: center; gap: 15px;">
@@ -1104,7 +1172,7 @@
           <div style="margin-bottom: 12px;">
             <label style="font-size: 0.85rem; font-weight: bold; color: #555; display: flex; align-items: center; gap: 8px; cursor: pointer;">
               <input type="checkbox" id="plume-toggle" onchange="toggleWindSimulation(this.checked)" style="cursor: pointer;">
-              Simular Viento en Mangas
+              Simular viento en mangas
             </label>
           </div>
           
@@ -1239,10 +1307,33 @@
         container.classList.toggle('zoom-delegaciones-on', zoom >= 11);
         container.classList.toggle('zoom-barrios-on', zoom >= 13);
         container.classList.toggle('zoom-empresas-on', zoom >= 14);
+        container.classList.toggle('zoom-feature-labels-on', zoom >= 14);
         container.classList.toggle('zoom-close', zoom >= 15);
     }
     map.on('zoomend', updatePolygonLabelScale);
     updatePolygonLabelScale();
+
+    function formatMapLabel(str) {
+        if (!str) return '';
+        const lowerExceptions = new Set(['de', 'del', 'da', 'do', 'la', 'las', 'los', 'el', 'en', 'y', 'a', 'e', 'o', 'u', 'con', 'por', 'para']);
+        const upperExceptions = new Set(['apell', 'n°', 'n°1', 'n°2', 'n°3', 'n°4', 'caps', 'dto', 'ing', 'dr', 'dra']);
+        return str.toLowerCase().split(' ').map((word, idx) => {
+            if (!word) return '';
+            const cleanWord = word.trim();
+            if (upperExceptions.has(cleanWord)) {
+                if (cleanWord === 'dr') return 'Dr.';
+                if (cleanWord === 'dra') return 'Dra.';
+                if (cleanWord === 'ing') return 'Ing.';
+                return cleanWord.toUpperCase();
+            }
+            if (idx > 0 && lowerExceptions.has(cleanWord)) {
+                return cleanWord;
+            }
+            return cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1);
+        }).join(' ');
+    }
+
+
 
     function toggleBasemapSelector(e) {
         if(e) e.stopPropagation();
@@ -1340,9 +1431,9 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
-                        const nameUpper = (feature.properties.nom || '').toUpperCase();
-                        if (nameUpper) {
-                            layer.bindTooltip(nameUpper, {
+                        const nameFormatted = formatMapLabel(feature.properties.nom || '');
+                        if (nameFormatted) {
+                            layer.bindTooltip(nameFormatted, {
                                 permanent: true,
                                 direction: 'center',
                                 className: 'polygon-label barrios-label'
@@ -1395,21 +1486,32 @@
 
             centrosGeoJSON = centrosData;
             if(!centrosLayerGroup) {
-                centrosLayerGroup = L.geoJSON(centrosGeoJSON, {
+                const centerMarkers = [];
+                const geoJsonLayer = L.geoJSON(centrosGeoJSON, {
                     style: { color: '#d32f2f', weight: 2, fillColor: '#f44336', fillOpacity: 0.3 },
+                    pointToLayer: (feature, latlng) => L.marker(latlng, { icon: createCustomIcon('fas fa-hands-helping', '#d32f2f') }),
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties;
                         const center = getLayerCenter(layer);
                         let content = `<b>${props.nom || 'Centro de Evacuados'}</b><br>Dirección: ${props.dir || '-'}<br>Tipo: ${props.tip || '-'}`;
                         if (center) {
                             content += renderPopupRouteButtons(center.lat, center.lng);
+                            if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+                                const iconMarker = L.marker(center, { icon: createCustomIcon('fas fa-hands-helping', '#d32f2f') });
+                                iconMarker.bindPopup(content);
+                                if (props.nom) {
+                                    iconMarker.bindTooltip(formatMapLabel(props.nom), { permanent: true, direction: 'top', className: 'feature-label' });
+                                }
+                                centerMarkers.push(iconMarker);
+                            }
                         }
                         layer.bindPopup(content);
                         if (props.nom) {
-                            layer.bindTooltip(props.nom, { permanent: true, direction: 'top', className: 'feature-label' });
+                            layer.bindTooltip(formatMapLabel(props.nom), { permanent: true, direction: 'top', className: 'feature-label' });
                         }
                     }
                 });
+                centrosLayerGroup = L.featureGroup([geoJsonLayer, ...centerMarkers]);
             }
 
             const featuresOrdenados = [...centrosGeoJSON.features].sort((a,b) => 
@@ -1458,8 +1560,10 @@
 
             centrosSaludGeoJSON = centrosSaludData;
             if(!centrosSaludLayerGroup) {
-                centrosSaludLayerGroup = L.geoJSON(centrosSaludGeoJSON, {
+                const centerMarkers = [];
+                const geoJsonLayer = L.geoJSON(centrosSaludGeoJSON, {
                     style: { color: '#00897b', weight: 2, fillColor: '#00a884', fillOpacity: 0.35 },
+                    pointToLayer: (feature, latlng) => L.marker(latlng, { icon: createCustomIcon('fas fa-notes-medical', '#00897b') }),
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties;
                         const center = getLayerCenter(layer);
@@ -1469,13 +1573,22 @@
                         }
                         if (center) {
                             content += renderPopupRouteButtons(center.lat, center.lng);
+                            if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+                                const iconMarker = L.marker(center, { icon: createCustomIcon('fas fa-notes-medical', '#00897b') });
+                                iconMarker.bindPopup(content);
+                                if (props.nom) {
+                                    iconMarker.bindTooltip(formatMapLabel(props.nom), { permanent: true, direction: 'top', className: 'feature-label' });
+                                }
+                                centerMarkers.push(iconMarker);
+                            }
                         }
                         layer.bindPopup(content);
                         if (props.nom) {
-                            layer.bindTooltip(props.nom, { permanent: true, direction: 'top', className: 'feature-label' });
+                            layer.bindTooltip(formatMapLabel(props.nom), { permanent: true, direction: 'top', className: 'feature-label' });
                         }
                     }
                 });
+                centrosSaludLayerGroup = L.featureGroup([geoJsonLayer, ...centerMarkers]);
             }
 
             const featuresOrdenados = [...centrosSaludGeoJSON.features].sort((a,b) => 
@@ -1544,7 +1657,7 @@
                         }
                         layer.bindPopup(content);
                         if (props.Nombre) {
-                            layer.bindTooltip(props.Nombre, { permanent: true, direction: 'top', className: 'feature-label' });
+                            layer.bindTooltip(formatMapLabel(props.Nombre), { permanent: true, direction: 'top', className: 'feature-label' });
                         }
                     }
                 });
@@ -1596,20 +1709,31 @@
 
             deportivosGeoJSON = deportivosData;
             if(!deportivosLayerGroup) {
-                deportivosLayerGroup = L.geoJSON(deportivosGeoJSON, {
+                const centerMarkers = [];
+                const geoJsonLayer = L.geoJSON(deportivosGeoJSON, {
                     style: { color: '#1976d2', weight: 2, fillColor: '#2196f3', fillOpacity: 0.3 },
+                    pointToLayer: (feature, latlng) => L.marker(latlng, { icon: createCustomIcon('fas fa-futbol', '#1976d2') }),
                     onEachFeature: (feature, layer) => {
                         const center = getLayerCenter(layer);
                         let content = `<b>${feature.properties.Name || 'Establecimiento Deportivo'}</b>`;
                         if (center) {
                             content += renderPopupRouteButtons(center.lat, center.lng);
+                            if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+                                const iconMarker = L.marker(center, { icon: createCustomIcon('fas fa-futbol', '#1976d2') });
+                                iconMarker.bindPopup(content);
+                                if (feature.properties.Name) {
+                                    iconMarker.bindTooltip(formatMapLabel(feature.properties.Name), { permanent: true, direction: 'top', className: 'feature-label' });
+                                }
+                                centerMarkers.push(iconMarker);
+                            }
                         }
                         layer.bindPopup(content);
                         if (feature.properties.Name) {
-                            layer.bindTooltip(feature.properties.Name, { permanent: true, direction: 'center', className: 'polygon-label barrios-label' });
+                            layer.bindTooltip(formatMapLabel(feature.properties.Name), { permanent: true, direction: 'top', className: 'feature-label' });
                         }
                     }
                 });
+                deportivosLayerGroup = L.featureGroup([geoJsonLayer, ...centerMarkers]);
             }
 
             const featuresOrdenados = [...deportivosGeoJSON.features].sort((a,b) => 
@@ -1649,6 +1773,17 @@
         }
     }
 
+    function getRespuestaIcon(tip, nom) {
+        const t = ((tip || '') + ' ' + (nom || '')).toLowerCase();
+        if (t.includes('bombero') || t.includes('bviw') || t.includes('bvpa') || t.includes('bvgd') || t.includes('bvoluntario')) {
+            return createCustomIcon('fas fa-fire-extinguisher', '#d32f2f');
+        }
+        if (t.includes('defensa civil')) {
+            return createCustomIcon('fas fa-hard-hat', '#e65100');
+        }
+        return createCustomIcon('fas fa-user-shield', '#1565c0');
+    }
+
     function initRespuesta() {
         const listDiv = document.getElementById('respuesta-list');
         try {
@@ -1658,29 +1793,33 @@
 
             respuestaGeoJSON = respuestaData;
             if(!respuestaLayerGroup) {
-                respuestaLayerGroup = L.geoJSON(respuestaGeoJSON, {
+                const centerMarkers = [];
+                const geoJsonLayer = L.geoJSON(respuestaGeoJSON, {
+                    style: { color: '#6a1b9a', weight: 2, fillColor: '#9c27b0', fillOpacity: 0.3 },
                     pointToLayer: function (feature, latlng) {
-                        return L.circleMarker(latlng, {
-                            radius: 8,
-                            fillColor: "#9c27b0",
-                            color: "#6a1b9a",
-                            weight: 1,
-                            opacity: 1,
-                            fillOpacity: 0.8
-                        });
+                        return L.marker(latlng, { icon: getRespuestaIcon(feature.properties?.tip, feature.properties?.nom) });
                     },
                     onEachFeature: (feature, layer) => {
                         const center = getLayerCenter(layer);
-                        let content = `<b>${feature.properties.nom || 'Respuesta Primaria'}</b>`;
+                        let content = `<b>${feature.properties.nom || 'Respuesta Primaria'}</b><br>Tipo: ${feature.properties.tip || '-'}<br>Dirección: ${feature.properties.dir || '-'}`;
                         if (center) {
                             content += renderPopupRouteButtons(center.lat, center.lng);
+                            if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+                                const iconMarker = L.marker(center, { icon: getRespuestaIcon(feature.properties?.tip, feature.properties?.nom) });
+                                iconMarker.bindPopup(content);
+                                if (feature.properties.nom) {
+                                    iconMarker.bindTooltip(formatMapLabel(feature.properties.nom), { permanent: true, direction: 'top', className: 'feature-label' });
+                                }
+                                centerMarkers.push(iconMarker);
+                            }
                         }
                         layer.bindPopup(content);
                         if (feature.properties.nom) {
-                            layer.bindTooltip(feature.properties.nom, { permanent: true, direction: 'top', className: 'feature-label' });
+                            layer.bindTooltip(formatMapLabel(feature.properties.nom), { permanent: true, direction: 'top', className: 'feature-label' });
                         }
                     }
                 });
+                respuestaLayerGroup = L.featureGroup([geoJsonLayer, ...centerMarkers]);
             }
 
             const featuresOrdenados = [...respuestaGeoJSON.features].sort((a,b) => 
@@ -1742,12 +1881,12 @@
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
-                        const nameUpper = (props.nom || '').toUpperCase();
-                        if (nameUpper) {
-                            layer.bindTooltip(nameUpper, {
+                        const nameFormatted = formatMapLabel(props.nom || '');
+                        if (nameFormatted) {
+                            layer.bindTooltip(nameFormatted, {
                                 permanent: true,
-                                direction: 'center',
-                                className: 'polygon-label delegaciones-label'
+                                direction: 'top',
+                                className: 'feature-label'
                             });
                         }
                     }
@@ -1800,8 +1939,10 @@
 
             escuelasGeoJSON = escuelasData;
             if(!escuelasLayerGroup) {
-                escuelasLayerGroup = L.geoJSON(escuelasGeoJSON, {
+                const centerMarkers = [];
+                const geoJsonLayer = L.geoJSON(escuelasGeoJSON, {
                     style: { color: '#303f9f', weight: 2, fillColor: '#3f51b5', fillOpacity: 0.3 },
+                    pointToLayer: (feature, latlng) => L.marker(latlng, { icon: createCustomIcon('fas fa-school', '#3f51b5') }),
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties;
                         const center = getLayerCenter(layer);
@@ -1812,13 +1953,22 @@
                         if (props.num) content += `<br>Teléfono: ${props.num}`;
                         if (center) {
                             content += renderPopupRouteButtons(center.lat, center.lng);
+                            if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
+                                const iconMarker = L.marker(center, { icon: createCustomIcon('fas fa-school', '#3f51b5') });
+                                iconMarker.bindPopup(content);
+                                if (props.nom) {
+                                    iconMarker.bindTooltip(formatMapLabel(props.nom), { permanent: true, direction: 'top', className: 'feature-label' });
+                                }
+                                centerMarkers.push(iconMarker);
+                            }
                         }
                         layer.bindPopup(content);
                         if (props.nom) {
-                            layer.bindTooltip(props.nom, { permanent: true, direction: 'top', className: 'feature-label' });
+                            layer.bindTooltip(formatMapLabel(props.nom), { permanent: true, direction: 'top', className: 'feature-label' });
                         }
                     }
                 });
+                escuelasLayerGroup = L.featureGroup([geoJsonLayer, ...centerMarkers]);
             }
 
             const featuresOrdenados = [...escuelasGeoJSON.features].sort((a,b) => 
@@ -1861,7 +2011,7 @@
     function createCustomIcon(faClass, bgColor) {
         return L.divIcon({
             className: 'custom-fa-icon-marker',
-            html: `<div style="background-color:${bgColor}; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#ffffff; box-shadow:0 2px 6px rgba(0,0,0,0.3); border:2px solid white; font-size:13px;"><i class="${faClass}"></i></div>`,
+            html: `<div class="marker-icon-inner" style="background-color:${bgColor}; display:flex; align-items:center; justify-content:center; color:#ffffff; box-shadow:0 2px 6px rgba(0,0,0,0.3); border:2px solid white; border-radius:50%; transition: all 0.25s ease;"><i class="${faClass}"></i></div>`,
             iconSize: [30, 30],
             iconAnchor: [15, 15],
             popupAnchor: [0, -15]
@@ -1891,9 +2041,9 @@
                         if (nameRaw.toUpperCase().includes('ZONA FRANCA')) {
                             nameRaw = 'Zona Franca';
                         }
-                        const nameUpper = nameRaw.toUpperCase();
-                        if (nameUpper) {
-                            layer.bindTooltip(nameUpper, {
+                        const nameFormatted = formatMapLabel(nameRaw);
+                        if (nameFormatted) {
+                            layer.bindTooltip(nameFormatted, {
                                 permanent: true,
                                 direction: 'center',
                                 className: 'polygon-label empresas-label'
@@ -1985,7 +2135,7 @@
                         }
                         layer.bindPopup(content);
                         if (props.inst) {
-                            layer.bindTooltip(props.inst, { permanent: true, direction: 'top', className: 'feature-label' });
+                            layer.bindTooltip(formatMapLabel(props.inst), { permanent: true, direction: 'top', className: 'feature-label' });
                         }
                     }
                 });
@@ -2051,7 +2201,7 @@
                         layer.bindPopup(content);
                         const labelText = props.ins || props.direc;
                         if (labelText) {
-                            layer.bindTooltip(labelText, { permanent: true, direction: 'top', className: 'feature-label' });
+                            layer.bindTooltip(formatMapLabel(labelText), { permanent: true, direction: 'top', className: 'feature-label' });
                         }
                     }
                 });
@@ -2116,7 +2266,7 @@
                         }
                         layer.bindPopup(content);
                         if (props.Inst) {
-                            layer.bindTooltip(props.Inst, { permanent: true, direction: 'top', className: 'feature-label' });
+                            layer.bindTooltip(formatMapLabel(props.Inst), { permanent: true, direction: 'top', className: 'feature-label' });
                         }
                     }
                 });
@@ -2402,6 +2552,12 @@
                 layerGroup.eachLayer(l => {
                     if (!map.hasLayer(l)) map.addLayer(l);
                 });
+                try {
+                    const bounds = layerGroup.getBounds();
+                    if (bounds && bounds.isValid()) {
+                        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+                    }
+                } catch(e) {}
             }
             listItems.forEach(el => el.classList.add('active'));
             setLayerVisibleVar(capa, true);
