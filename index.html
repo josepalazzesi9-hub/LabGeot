@@ -1067,7 +1067,7 @@
         <div class="layer-item" id="barrios-btn" onclick="toggleDropdown('barrios')">
             <i class="fas fa-chevron-right" id="barrios-chevron" style="width:10px; margin-right:10px;"></i>
             <i class="fas fa-map-marked-alt"></i>
-            <span class="layer-name">Barrios proceso APELL</span>
+            <span class="layer-name">Barrios</span>
             <i class="fas fa-eye-slash layer-visibility-icon" id="barrios-visibility" onclick="event.stopPropagation(); toggleLayer('barrios')"></i>
         </div>
         <div class="sub-layers" id="barrios-list">
@@ -1156,45 +1156,21 @@
         </div>
       </div>
 
-      <!-- Weather and Wind Simulation Widget -->
-      <div class="collapsible-widget">
-        <div class="collapsible-widget-header" onclick="toggleWidgetSection('wind')">
-          <i class="fas fa-chevron-right collapsible-widget-chevron" id="wind-widget-chevron"></i>
-          <i class="fas fa-wind" style="color: #2e7d32;"></i>
-          <span>Clima y dirección del viento</span>
+      <!-- Weather and Wind Widget -->
+      <div style="margin-top: 15px; padding: 12px; background: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div id="weather-info" style="font-size: 0.85rem; color: #333; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+          <div><i class="fas fa-location-arrow" id="wind-arrow" style="transition: transform 0.5s; display: inline-block; color: #2e7d32;"></i> <span id="wind-dir-text" style="font-weight: 500;">Cargando viento...</span></div>
+          <div><i class="fas fa-tachometer-alt" style="color: #2e7d32;"></i> <span id="wind-speed-text" style="font-weight: 500;">-- km/h</span></div>
         </div>
-        <div class="collapsible-widget-body" id="wind-widget-body">
-          <div id="weather-info" style="font-size: 0.85rem; color: #555; margin-bottom: 12px; display: flex; align-items: center; gap: 15px;">
-            <div><i class="fas fa-location-arrow" id="wind-arrow" style="transition: transform 0.5s; display: inline-block;"></i> <span id="wind-dir-text">Cargando viento...</span></div>
-            <div><i class="fas fa-tachometer-alt"></i> <span id="wind-speed-text">-- km/h</span></div>
-          </div>
-          
-          <div style="margin-bottom: 12px;">
-            <label style="font-size: 0.85rem; font-weight: bold; color: #555; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="checkbox" id="plume-toggle" onchange="toggleWindSimulation(this.checked)" style="cursor: pointer;">
-              Simular viento en mangas
-            </label>
-          </div>
-          
-          <div id="plume-controls" style="display: none; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 0.8rem; color: #555;">
-            <div style="margin-bottom: 8px;">
-              <span style="display: flex; justify-content: space-between;">
-                <span>Dirección del viento (°):</span>
-                <strong id="sim-dir-val">--</strong>
-              </span>
-              <input type="range" id="sim-wind-dir" min="0" max="360" value="0" oninput="updatePlumeFromControls()" style="width: 100%;">
-            </div>
-            <div style="margin-bottom: 8px;">
-              <span style="display: flex; justify-content: space-between;">
-                <span>Velocidad del viento (km/h):</span>
-                <strong id="sim-speed-val">--</strong>
-              </span>
-              <input type="range" id="sim-wind-speed" min="5" max="100" value="20" oninput="updatePlumeFromControls()" style="width: 100%;">
-            </div>
-            <div style="font-size: 0.75rem; color: #888; font-style: italic;">
-              * Muestra la dirección y proyección del viento desde las mangas instaladas.
-            </div>
-          </div>
+        
+        <div style="padding: 10px; background: rgba(46, 125, 50, 0.08); border-radius: 6px;">
+          <label style="font-size: 0.85rem; font-weight: bold; color: #2e7d32; display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
+            <input type="checkbox" id="mangas-widget-toggle" onchange="toggleLayer('mangas')" style="cursor: pointer; width: 16px; height: 16px;">
+            Ver dirección del viento en mangas
+          </label>
+        </div>
+        <div style="font-size: 0.75rem; color: #888; font-style: italic; margin-top: 8px;">
+          * Muestra la proyección visual del viento en tiempo real desde cada manga anemoscópica.
         </div>
       </div>
     </div>
@@ -1313,6 +1289,26 @@
     map.on('zoomend', updatePolygonLabelScale);
     updatePolygonLabelScale();
 
+    function getFeatureName(props) {
+        if (!props) return '';
+        return props.nom || props.NAME || props.Nombre || props.Name || props.inst || props.Inst || props.direc || props.Calle || '';
+    }
+
+    function findFeatureLayer(layerGroup, feature) {
+        if (!layerGroup || !feature) return null;
+        let found = null;
+        layerGroup.eachLayer(l => {
+            if (l.feature === feature) {
+                found = l;
+            } else if (l.eachLayer) {
+                l.eachLayer(sub => {
+                    if (sub.feature === feature) found = sub;
+                });
+            }
+        });
+        return found;
+    }
+
     function formatMapLabel(str) {
         if (!str) return '';
         const lowerExceptions = new Set(['de', 'del', 'da', 'do', 'la', 'las', 'los', 'el', 'en', 'y', 'a', 'e', 'o', 'u', 'con', 'por', 'para']);
@@ -1425,13 +1421,14 @@
                 barriosLayerGroup = L.geoJSON(barriosGeoJSON, {
                     style: { color: '#2e7d32', weight: 2, fillColor: '#4caf50', fillOpacity: 0.3 },
                     onEachFeature: (feature, layer) => {
+                        const nomRaw = getFeatureName(feature.properties);
                         const center = getLayerCenter(layer);
-                        let content = `<b>${feature.properties.nom || 'Barrio'}</b>`;
+                        let content = `<b>${nomRaw || 'Barrio'}</b>`;
                         if (center) {
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
                         layer.bindPopup(content);
-                        const nameFormatted = formatMapLabel(feature.properties.nom || '');
+                        const nameFormatted = formatMapLabel(nomRaw);
                         if (nameFormatted) {
                             layer.bindTooltip(nameFormatted, {
                                 permanent: true,
@@ -1444,7 +1441,7 @@
             }
 
             const featuresOrdenados = [...barriosGeoJSON.features].sort((a,b) => 
-                (a.properties.nom || "").localeCompare(b.properties.nom || "")
+                getFeatureName(a.properties).localeCompare(getFeatureName(b.properties))
             );
 
             listDiv.innerHTML = '';
@@ -1452,11 +1449,11 @@
             featuresOrdenados.forEach((feature) => {
                 const item = document.createElement('div');
                 item.className = 'sub-layer-item';
-                item.innerText = feature.properties.nom || 'Barrio Sin Nombre';
+                const nomBarrio = getFeatureName(feature.properties) || 'Barrio Sin Nombre';
+                item.innerText = formatMapLabel(nomBarrio);
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    barriosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    const targetLayer = findFeatureLayer(barriosLayerGroup, feature);
                     if (!targetLayer) return;
 
                     if (!map.hasLayer(targetLayer)) {
@@ -1529,8 +1526,7 @@
                 item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    centrosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    const targetLayer = findFeatureLayer(centrosLayerGroup, feature);
                     if (!targetLayer) return;
 
                     if (!map.hasLayer(targetLayer)) {
@@ -1606,8 +1602,7 @@
                 item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    centrosSaludLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    const targetLayer = findFeatureLayer(centrosSaludLayerGroup, feature);
                     if (!targetLayer) return;
 
                     if (!map.hasLayer(targetLayer)) {
@@ -1678,8 +1673,7 @@
                 item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    comedoresLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    const targetLayer = findFeatureLayer(comedoresLayerGroup, feature);
                     if (!targetLayer) return;
 
                     if (!map.hasLayer(targetLayer)) {
@@ -1751,8 +1745,7 @@
                 item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    deportivosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    const targetLayer = findFeatureLayer(deportivosLayerGroup, feature);
                     if (!targetLayer) return;
 
                     if (!map.hasLayer(targetLayer)) {
@@ -1837,8 +1830,7 @@
                 item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    respuestaLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    const targetLayer = findFeatureLayer(respuestaLayerGroup, feature);
                     if (!targetLayer) return;
 
                     if (!map.hasLayer(targetLayer)) {
@@ -1908,8 +1900,7 @@
                 item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    delegacionesLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    const targetLayer = findFeatureLayer(delegacionesLayerGroup, feature);
                     if (!targetLayer) return;
 
                     if (!map.hasLayer(targetLayer)) {
@@ -1949,7 +1940,6 @@
                         let content = `<b>${props.nom || 'Establecimiento Educativo'}</b><br>Dirección: ${props.dir || '-'}`;
                         if (props.adm) content += `<br>Director/Adm: ${props.adm}`;
                         if (props.mat) content += `<br>Matrícula: ${props.mat}`;
-                        if (props.cue) content += `<br>CUE: ${props.cue}`;
                         if (props.num) content += `<br>Teléfono: ${props.num}`;
                         if (center) {
                             content += renderPopupRouteButtons(center.lat, center.lng);
@@ -1986,8 +1976,7 @@
                 item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    escuelasLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    const targetLayer = findFeatureLayer(escuelasLayerGroup, feature);
                     if (!targetLayer) return;
 
                     if (!map.hasLayer(targetLayer)) {
@@ -2033,6 +2022,8 @@
                         const props = feature.properties;
                         const center = getLayerCenter(layer);
                         let content = `<b>${props.Empresaa || 'Empresa Proceso APELL'}</b>`;
+                        if (props.Rubro) content += `<br>Rubro: ${props.Rubro}`;
+                        if (props.Contacto) content += `<br>Contacto / Web: <a href="${props.Contacto}" target="_blank" rel="noopener" style="color:#0288d1; word-break:break-all;">${props.Contacto}</a>`;
                         if (center) {
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
@@ -2129,7 +2120,7 @@
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties;
                         const center = getLayerCenter(layer);
-                        let content = `<b>${props.inst || 'Manga de Viento'}</b><br>Dirección: ${props.Dire || '-'}`;
+                        let content = `<b>${props.inst || 'Manga de Viento'}</b><br>Ubicación / Dirección: ${props.Dire || '-'}`;
                         if (center) {
                             content += renderPopupRouteButtons(center.lat, center.lng);
                         }
@@ -2156,8 +2147,7 @@
                 item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    mangasLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    const targetLayer = findFeatureLayer(mangasLayerGroup, feature);
                     if (!targetLayer) return;
 
                     if (!map.hasLayer(targetLayer)) {
@@ -2222,8 +2212,7 @@
                 item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    puntosLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    const targetLayer = findFeatureLayer(puntosLayerGroup, feature);
                     if (!targetLayer) return;
 
                     if (!map.hasLayer(targetLayer)) {
@@ -2287,8 +2276,7 @@
                 item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
                 item.onclick = (e) => {
                     e.stopPropagation();
-                    let targetLayer;
-                    sirenasLayerGroup.eachLayer(l => { if(l.feature === feature) targetLayer = l; });
+                    const targetLayer = findFeatureLayer(sirenasLayerGroup, feature);
                     if (!targetLayer) return;
 
                     if (!map.hasLayer(targetLayer)) {
@@ -2394,10 +2382,10 @@
         if (areaInfluenciaLayerGroup) return;
         if (typeof barriosData !== 'undefined') {
             barriosGeoJSON = barriosData;
-            const targetBarrios = ['white', 'justo', 'saladero', 'delfina', 'paraguaya', '26'];
+            const targetBarrios = ['white', 'ingeniero', 'justo', 'saladero', 'delfina', 'paraguaya', 'loma', '26', 'septiembre'];
             areaInfluenciaLayerGroup = L.geoJSON(barriosGeoJSON, {
                 filter: (feature) => {
-                    const nom = (feature.properties?.nom || '').toLowerCase();
+                    const nom = getFeatureName(feature.properties).toLowerCase();
                     return targetBarrios.some(term => nom.includes(term));
                 },
                 style: {
@@ -2407,21 +2395,23 @@
                     fillOpacity: 0.4
                 },
                 onEachFeature: (feature, layer) => {
+                    const nomRaw = getFeatureName(feature.properties);
                     const center = getLayerCenter(layer);
-                    let content = `<b>${feature.properties.nom || 'Barrio Proceso APELL'}</b>`;
+                    let content = `<b>${nomRaw || 'Barrio Proceso APELL'}</b>`;
                     if (center) {
                         content += renderPopupRouteButtons(center.lat, center.lng);
                     }
                     layer.bindPopup(content);
 
-                    const nameUpper = (feature.properties.nom || '').toUpperCase();
-                    if (nameUpper) {
-                        layer.bindTooltip(nameUpper, {
+                    const nameFormatted = formatMapLabel(nomRaw);
+                    if (nameFormatted) {
+                        layer.bindTooltip(nameFormatted, {
                             permanent: true,
                             direction: 'center',
                             className: 'polygon-label area-influencia-label'
                         });
-                        if (nameUpper.includes('WHITE') || nameUpper.includes('INGENIERO')) {
+                        const upper = nameFormatted.toUpperCase();
+                        if (upper.includes('WHITE') || upper.includes('INGENIERO')) {
                             ingWhiteBarrioLayer = layer;
                         }
                     }
@@ -2472,10 +2462,7 @@
                 });
             }
 
-            if (ingWhiteBarrioLayer) {
-                map.fitBounds(ingWhiteBarrioLayer.getBounds(), { padding: [50, 50], maxZoom: 15, animate: false });
-                ingWhiteBarrioLayer.openPopup();
-            } else if (areaInfluenciaLayerGroup) {
+            if (areaInfluenciaLayerGroup && areaInfluenciaLayerGroup.getBounds && areaInfluenciaLayerGroup.getBounds().isValid()) {
                 map.fitBounds(areaInfluenciaLayerGroup.getBounds(), { padding: [50, 50], animate: false });
             }
         } else {
@@ -2562,127 +2549,47 @@
             listItems.forEach(el => el.classList.add('active'));
             setLayerVisibleVar(capa, true);
         }
+
+        if (capa === 'mangas') {
+            const widgetToggle = document.getElementById('mangas-widget-toggle');
+            if (widgetToggle) widgetToggle.checked = !isCurrentlyOn;
+
+            if (!isCurrentlyOn) {
+                updateWindSimulation();
+            } else {
+                if (windPolygonsLayerGroup) {
+                    map.removeLayer(windPolygonsLayerGroup);
+                    windPolygonsLayerGroup = null;
+                }
+            }
+        }
     }
 
-    function zoomABarrio(featureBuscar) {
-        if(!barriosLayerGroup) return;
-        barriosLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
-                layer.openPopup();
-            }
-        });
+    function zoomAFeature(layerGroup, feature, maxZoom = 16) {
+        const targetLayer = findFeatureLayer(layerGroup, feature);
+        if (!targetLayer) return;
+        if (targetLayer.getBounds && typeof targetLayer.getBounds === 'function') {
+            map.fitBounds(targetLayer.getBounds(), { padding: [50, 50], maxZoom });
+        } else if (targetLayer.getLatLng && typeof targetLayer.getLatLng === 'function') {
+            map.setView(targetLayer.getLatLng(), maxZoom);
+        }
+        if (targetLayer.openPopup) {
+            targetLayer.openPopup();
+        }
     }
 
-    function zoomACentro(featureBuscar) {
-        if(!centrosLayerGroup) return;
-        centrosLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
-                layer.openPopup();
-            }
-        });
-    }
-
-    function zoomACentroSalud(featureBuscar) {
-        if(!centrosSaludLayerGroup) return;
-        centrosSaludLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 16 });
-                layer.openPopup();
-            }
-        });
-    }
-
-    function zoomAComedor(featureBuscar) {
-        if(!comedoresLayerGroup) return;
-        comedoresLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.setView(layer.getLatLng(), 16);
-                layer.openPopup();
-            }
-        });
-    }
-
-    function zoomADeportivo(featureBuscar) {
-        if(!deportivosLayerGroup) return;
-        deportivosLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
-                layer.openPopup();
-            }
-        });
-    }
-
-    function zoomARespuesta(featureBuscar) {
-        if(!respuestaLayerGroup) return;
-        respuestaLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
-                layer.openPopup();
-            }
-        });
-    }
-
-    function zoomADelegacion(featureBuscar) {
-        if(!delegacionesLayerGroup) return;
-        delegacionesLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
-                layer.openPopup();
-            }
-        });
-    }
-
-    function zoomAEscuela(featureBuscar) {
-        if(!escuelasLayerGroup) return;
-        escuelasLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 15 });
-                layer.openPopup();
-            }
-        });
-    }
-
-    function zoomAEmpresa(featureBuscar) {
-        if(!empresasLayerGroup) return;
-        empresasLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.fitBounds(layer.getBounds(), { padding: [50, 50], maxZoom: 16 });
-                layer.openPopup();
-            }
-        });
-    }
-
-    function zoomAManga(featureBuscar) {
-        if(!mangasLayerGroup) return;
-        mangasLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.setView(layer.getLatLng(), 16);
-                layer.openPopup();
-            }
-        });
-    }
-
-    function zoomAPunto(featureBuscar) {
-        if(!puntosLayerGroup) return;
-        puntosLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.setView(layer.getLatLng(), 16);
-                layer.openPopup();
-            }
-        });
-    }
-
-    function zoomASirena(featureBuscar) {
-        if(!sirenasLayerGroup) return;
-        sirenasLayerGroup.eachLayer(layer => {
-            if(layer.feature === featureBuscar) {
-                map.setView(layer.getLatLng(), 16);
-                layer.openPopup();
-            }
-        });
-    }
+    function zoomABarrio(featureBuscar) { zoomAFeature(barriosLayerGroup, featureBuscar, 15); }
+    function zoomACentro(featureBuscar) { zoomAFeature(centrosLayerGroup, featureBuscar, 15); }
+    function zoomACentroSalud(featureBuscar) { zoomAFeature(centrosSaludLayerGroup, featureBuscar, 16); }
+    function zoomAComedor(featureBuscar) { zoomAFeature(comedoresLayerGroup, featureBuscar, 16); }
+    function zoomADeportivo(featureBuscar) { zoomAFeature(deportivosLayerGroup, featureBuscar, 15); }
+    function zoomARespuesta(featureBuscar) { zoomAFeature(respuestaLayerGroup, featureBuscar, 15); }
+    function zoomADelegacion(featureBuscar) { zoomAFeature(delegacionesLayerGroup, featureBuscar, 15); }
+    function zoomAEscuela(featureBuscar) { zoomAFeature(escuelasLayerGroup, featureBuscar, 15); }
+    function zoomAEmpresa(featureBuscar) { zoomAFeature(empresasLayerGroup, featureBuscar, 16); }
+    function zoomAManga(featureBuscar) { zoomAFeature(mangasLayerGroup, featureBuscar, 16); }
+    function zoomAPunto(featureBuscar) { zoomAFeature(puntosLayerGroup, featureBuscar, 16); }
+    function zoomASirena(featureBuscar) { zoomAFeature(sirenasLayerGroup, featureBuscar, 16); }
 
     function handleGlobalSearch(e) {
         const query = e.target.value.toLowerCase().trim();
@@ -3185,14 +3092,12 @@
         return null;
     }
 
-    // 3. CLIMA Y SIMULACIÓN DE VIENTO EN MANGAS
+    // 3. CLIMA Y DIRECCIÓN DEL VIENTO EN MANGAS (TIEMPO REAL)
     let currentWindDirection = 0; // grados
     let currentWindSpeed = 10;    // km/h
-    let isWindSimActive = false;
     let windPolygonsLayerGroup = null;
 
     async function fetchWeatherData() {
-        // Intentar primero con Open-Meteo
         try {
             console.log("Intentando obtener clima desde Open-Meteo...");
             const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-38.7833&longitude=-62.2667&current=wind_speed_10m,wind_direction_10m");
@@ -3204,15 +3109,12 @@
                 currentWindSpeed = Math.round(data.current.wind_speed_10m);
                 currentWindDirection = data.current.wind_direction_10m;
                 
-                // Actualizar interfaz
                 updateWeatherUI(currentWindSpeed, currentWindDirection, false);
                 return;
             }
             throw new Error("Respuesta de API Open-Meteo inválida");
         } catch (e) {
             console.warn("Open-Meteo falló. Intentando alternativa con wttr.in...", e);
-            
-            // Intentar con wttr.in como alternativa de respaldo en tiempo real
             try {
                 const res = await fetch("https://wttr.in/Bahia+Blanca?format=j1");
                 if (!res.ok) {
@@ -3230,8 +3132,6 @@
                 throw new Error("Respuesta de wttr.in inválida");
             } catch (err2) {
                 console.error("Ambos servicios de clima fallaron. Usando valores predeterminados:", err2);
-                
-                // Fallback final predeterminado
                 currentWindDirection = 45;
                 currentWindSpeed = 15;
                 updateWeatherUI(currentWindSpeed, currentWindDirection, true);
@@ -3243,24 +3143,20 @@
         document.getElementById('wind-speed-text').innerText = `${speed} km/h`;
         document.getElementById('wind-arrow').style.transform = `rotate(${direction}deg)`;
         
-        // Convertir dirección numérica a puntos cardinales para el texto
         const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSO", "SO", "OSO", "O", "Oeste", "NO", "NNO"];
         const index = Math.round(((direction % 360) / 22.5));
         const cardinal = directions[index % 16];
         
         const suffix = isDefault ? " (Predeterminado)" : "";
         document.getElementById('wind-dir-text').innerText = `${cardinal} (${direction}°)${suffix}`;
-        
-        // Sincronizar los controles deslizantes
-        document.getElementById('sim-wind-dir').value = direction;
-        document.getElementById('sim-wind-speed').value = speed;
-        document.getElementById('sim-dir-val').innerText = `${direction}°`;
-        document.getElementById('sim-speed-val').innerText = `${speed} km/h`;
+
+        if (isMangasVisible) {
+            updateWindSimulation();
+        }
     }
 
-    // Función para calcular puntos de destino (geodésicos simplificados para Leaflet)
     function getDestinationPoint(latlng, distanceMetres, bearingDegrees) {
-        const R = 6378137; // Radio de la tierra en metros
+        const R = 6378137;
         const d = distanceMetres / R;
         const lat1 = latlng.lat * Math.PI / 180;
         const lon1 = latlng.lng * Math.PI / 180;
@@ -3274,15 +3170,10 @@
         return L.latLng(lat2 * 180 / Math.PI, lon2 * 180 / Math.PI);
     }
 
-    // Generar cono de pluma/dirección de viento (arco de 35 grados)
     function calculatePlumePoints(origin, windDir, windSpeed) {
-        // La pluma viaja en la dirección hacia donde sopla el viento (viento del Este sopla hacia el Oeste)
         const blowDir = (windDir + 180) % 360;
-        const aperture = 35; // ángulo de apertura en grados
-        
-        // El largo del cono es proporcional a la velocidad del viento (100m por cada km/h, máx 10km)
+        const aperture = 35;
         const length = Math.min(windSpeed * 100, 10000); 
-        
         const points = [origin];
         const steps = 10;
         
@@ -3290,74 +3181,42 @@
             const angle = blowDir - (aperture / 2) + (aperture * i / steps);
             points.push(getDestinationPoint(origin, length, angle));
         }
-        
         return points;
     }
 
-    function toggleWindSimulation(active) {
-        isWindSimActive = active;
-        const controls = document.getElementById('plume-controls');
-        
-        if (active) {
-            controls.style.display = 'block';
-            
-            // Si la capa de mangas de viento no está activa, encenderla automáticamente
-            if (!isMangasVisible) {
-                toggleLayer('mangas');
-            }
-            
-            updateWindSimulation();
-        } else {
-            controls.style.display = 'none';
-            if (windPolygonsLayerGroup) {
-                map.removeLayer(windPolygonsLayerGroup);
-                windPolygonsLayerGroup = null;
-            }
-        }
-    }
-
     function updateWindSimulation() {
-        if (!isWindSimActive || typeof mangasData === 'undefined' || !mangasData.features) return;
-        
-        const dir = parseInt(document.getElementById('sim-wind-dir').value);
-        const speed = parseInt(document.getElementById('sim-wind-speed').value);
+        if (typeof mangasData === 'undefined' || !mangasData.features) return;
         
         if (windPolygonsLayerGroup) {
             map.removeLayer(windPolygonsLayerGroup);
+            windPolygonsLayerGroup = null;
         }
         
+        if (!isMangasVisible) return;
+
         windPolygonsLayerGroup = L.layerGroup();
 
         mangasData.features.forEach(feature => {
             if (feature.geometry && feature.geometry.type === 'Point') {
-                const coords = feature.geometry.coordinates; // [lng, lat]
+                const coords = feature.geometry.coordinates;
                 const origin = L.latLng(coords[1], coords[0]);
-                const points = calculatePlumePoints(origin, dir, speed);
+                const points = calculatePlumePoints(origin, currentWindDirection, currentWindSpeed);
                 
                 const poly = L.polygon(points, {
                     color: "#00838f",
                     fillColor: "#00acc1",
-                    fillOpacity: 0.4,
+                    fillOpacity: 0.35,
                     weight: 2,
                     dashArray: "5, 5"
                 });
                 
-                poly.bindPopup(`<b>Simulación de Viento</b><br>Manga: ${feature.properties.inst || 'Manga de Viento'}<br>Dirección del viento: ${dir}° (${speed} km/h)`);
+                const nom = feature.properties.inst || 'Manga de Viento';
+                poly.bindPopup(`<b>Proyección del Viento en Tiempo Real</b><br>Manga: ${nom}<br>Viento actual: ${currentWindDirection}° (${currentWindSpeed} km/h)`);
                 windPolygonsLayerGroup.addLayer(poly);
             }
         });
 
         windPolygonsLayerGroup.addTo(map);
-    }
-
-    function updatePlumeFromControls() {
-        const dir = document.getElementById('sim-wind-dir').value;
-        const speed = document.getElementById('sim-wind-speed').value;
-        
-        document.getElementById('sim-dir-val').innerText = `${dir}°`;
-        document.getElementById('sim-speed-val').innerText = `${speed} km/h`;
-        
-        updateWindSimulation();
     }
 
     // Cargar clima al iniciar

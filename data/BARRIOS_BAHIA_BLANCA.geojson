@@ -1,4 +1,4 @@
-const barriosData = {
+{
   "type": "FeatureCollection",
   "name": "BARRIOS_BAHIA_BLANCA",
   "features": [
@@ -6875,4 +6875,4 @@ const barriosData = {
       }
     }
   ]
-};
+}

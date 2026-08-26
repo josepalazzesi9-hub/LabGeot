@@ -1,4 +1,4 @@
-const empresasData = {
+{
   "type": "FeatureCollection",
   "name": "empresas_polo",
   "features": [
@@ -1295,4 +1295,4 @@ const empresasData = {
       }
     }
   ]
-};
+}

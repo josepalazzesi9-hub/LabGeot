@@ -1,4 +1,4 @@
-const escuelasData = {
+{
   "type": "FeatureCollection",
   "name": "ESCUELAS",
   "features": [
@@ -1603,4 +1603,4 @@ const escuelasData = {
       }
     }
   ]
-};
+}

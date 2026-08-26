@@ -1,4 +1,4 @@
-const centrosSaludData = {
+{
   "type": "FeatureCollection",
   "name": "CENTRO_SALUD",
   "features": [
@@ -2293,4 +2293,4 @@ const centrosSaludData = {
       }
     }
   ]
-};
+}
