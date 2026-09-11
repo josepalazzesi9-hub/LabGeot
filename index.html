@@ -197,6 +197,14 @@
     text-align: center;
   }
 
+  .layer-item img.layer-icon-img {
+    margin-right: 15px;
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
   .layer-item i.layer-visibility-icon {
     margin-right: 0;
     margin-left: auto;
@@ -1020,7 +1028,7 @@
 
         <div class="layer-item" id="mangas-btn" onclick="toggleDropdown('mangas')">
             <i class="fas fa-chevron-right" id="mangas-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-wind"></i>
+            <img src="img/manga_viento.png" alt="Mangas de viento" class="layer-icon-img">
             <span class="layer-name">Mangas de viento</span>
             <i class="fas fa-eye-slash layer-visibility-icon" id="mangas-visibility" onclick="event.stopPropagation(); toggleLayer('mangas')"></i>
         </div>
@@ -1030,7 +1038,7 @@
 
         <div class="layer-item" id="sirenas-btn" onclick="toggleDropdown('sirenas')">
             <i class="fas fa-chevron-right" id="sirenas-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-bullhorn"></i>
+            <img src="img/sirena_azul.png" alt="Sirenas comunitarias" class="layer-icon-img">
             <span class="layer-name">Sirenas comunitarias</span>
             <i class="fas fa-eye-slash layer-visibility-icon" id="sirenas-visibility" onclick="event.stopPropagation(); toggleLayer('sirenas')"></i>
         </div>
@@ -1040,7 +1048,7 @@
 
         <div class="layer-item" id="puntos-btn" onclick="toggleDropdown('puntos')">
             <i class="fas fa-chevron-right" id="puntos-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-users"></i>
+            <img src="img/punto_encuentro.png" alt="Puntos de encuentro" class="layer-icon-img" style="border-radius:3px;">
             <span class="layer-name">Puntos de encuentro</span>
             <i class="fas fa-eye-slash layer-visibility-icon" id="puntos-visibility" onclick="event.stopPropagation(); toggleLayer('puntos')"></i>
         </div>
@@ -1242,7 +1250,7 @@
   <script src="data/respuesta.js?v=2"></script>
   <script src="data/delegaciones.js?v=2"></script>
   <script src="data/escuelas.js?v=2"></script>
-  <script src="data/empresas.js?v=2"></script>
+  <script src="data/empresas.js?v=3"></script>
   <script src="data/mangas.js?v=2"></script>
   <script src="data/puntos_encuentro.js?v=2"></script>
   <script src="data/sirenas.js?v=2"></script>
@@ -2007,6 +2015,16 @@
         });
     }
 
+    function createCustomImageIcon(imgSrc, bgColor = '#ffffff', imgPadding = '2px', borderRadius = '50%') {
+        return L.divIcon({
+            className: 'custom-fa-icon-marker custom-img-marker',
+            html: `<div class="marker-icon-inner" style="background-color:${bgColor}; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,0.3); border:2px solid white; border-radius:${borderRadius}; transition: all 0.25s ease; overflow:hidden;"><img src="${imgSrc}" style="width:100%; height:100%; object-fit:contain; padding:${imgPadding}; box-sizing:border-box;" alt="icon"></div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            popupAnchor: [0, -15]
+        });
+    }
+
     function initEmpresas() {
         const listDiv = document.getElementById('empresas-list');
         try {
@@ -2115,7 +2133,7 @@
             if(!mangasLayerGroup) {
                 mangasLayerGroup = L.geoJSON(mangasGeoJSON, {
                     pointToLayer: function (feature, latlng) {
-                        return L.marker(latlng, { icon: createCustomIcon('fas fa-wind', '#0097a7') });
+                        return L.marker(latlng, { icon: createCustomImageIcon('img/manga_viento.png', '#ffffff', '2px', '50%') });
                     },
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties;
@@ -2179,7 +2197,7 @@
             if(!puntosLayerGroup) {
                 puntosLayerGroup = L.geoJSON(puntosGeoJSON, {
                     pointToLayer: function (feature, latlng) {
-                        return L.marker(latlng, { icon: createCustomIcon('fas fa-users', '#f57c00') });
+                        return L.marker(latlng, { icon: createCustomImageIcon('img/punto_encuentro.png', '#ffffff', '1px', '4px') });
                     },
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties;
@@ -2244,7 +2262,7 @@
             if(!sirenasLayerGroup) {
                 sirenasLayerGroup = L.geoJSON(sirenasGeoJSON, {
                     pointToLayer: function (feature, latlng) {
-                        return L.marker(latlng, { icon: createCustomIcon('fas fa-bullhorn', '#d32f2f') });
+                        return L.marker(latlng, { icon: createCustomImageIcon('img/sirena_azul.png', '#ffffff', '2px', '50%') });
                     },
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties;
@@ -3170,10 +3188,10 @@
         return L.latLng(lat2 * 180 / Math.PI, lon2 * 180 / Math.PI);
     }
 
-    function calculatePlumePoints(origin, windDir, windSpeed) {
+    function calculatePlumePoints(origin, windDir) {
         const blowDir = (windDir + 180) % 360;
         const aperture = 35;
-        const length = Math.min(windSpeed * 100, 10000); 
+        const length = 400; // Cono con longitud fija de 400m (no adaptativo)
         const points = [origin];
         const steps = 10;
         
@@ -3200,7 +3218,7 @@
             if (feature.geometry && feature.geometry.type === 'Point') {
                 const coords = feature.geometry.coordinates;
                 const origin = L.latLng(coords[1], coords[0]);
-                const points = calculatePlumePoints(origin, currentWindDirection, currentWindSpeed);
+                const points = calculatePlumePoints(origin, currentWindDirection);
                 
                 const poly = L.polygon(points, {
                     color: "#00838f",
@@ -3379,7 +3397,7 @@
         </div>
 
         <div class="apell-modal-section">
-          <h3><i class="fas fa-bullhorn"></i> Red de Sirenas Comunitarias</h3>
+          <h3><img src="img/sirena_azul.png" alt="Sirena" style="width:22px; height:22px; vertical-align:middle; margin-right:6px;"> Red de Sirenas Comunitarias</h3>
           <p style="margin-top: 0; color: #444;">Para emitir la señal sonora de alerta a la población ante una eventual contingencia o fuga, el sistema dispone de sirenas comunitarias emplazadas en las siguientes ubicaciones:</p>
           <ul class="apell-sirenas-list">
             <li>
