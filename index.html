@@ -1066,6 +1066,16 @@
             <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
         </div>
 
+        <div class="layer-item" id="handies-btn" onclick="toggleDropdown('handies')">
+            <i class="fas fa-chevron-right" id="handies-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-walkie-talkie" style="color: #e65100;"></i>
+            <span class="layer-name">Handies Proceso APELL</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="handies-visibility" onclick="event.stopPropagation(); toggleLayer('handies')"></i>
+        </div>
+        <div class="sub-layers" id="handies-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+
 
         <!-- Segmentación 2: Información complementaria -->
         <div class="layer-group-title">
@@ -1254,6 +1264,7 @@
   <script src="data/mangas.js?v=2"></script>
   <script src="data/puntos_encuentro.js?v=2"></script>
   <script src="data/sirenas.js?v=2"></script>
+  <script src="data/handies.js?v=1"></script>
   <script>
 
     const map = L.map('map', { zoomControl: false }).setView([-38.7833, -62.2667], 14);
@@ -1401,6 +1412,10 @@
     let sirenasGeoJSON = null;
     let sirenasLayerGroup = null;
     let isSirenasVisible = false;
+
+    let handiesGeoJSON = null;
+    let handiesLayerGroup = null;
+    let isHandiesVisible = false;
 
 
 
@@ -2315,6 +2330,82 @@
         }
     }
 
+    function initHandies() {
+        const listDiv = document.getElementById('handies-list');
+        try {
+            if(typeof handiesData === 'undefined') {
+                throw new Error("El archivo handies.js no se cargó.");
+            }
+
+            handiesGeoJSON = handiesData;
+            if(!handiesLayerGroup) {
+                handiesLayerGroup = L.geoJSON(handiesGeoJSON, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.marker(latlng, { icon: createCustomIcon('fas fa-walkie-talkie', '#e65100') });
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const center = getLayerCenter(layer);
+                        let content = `<div style="font-family:'Roboto',sans-serif;">
+                            <div style="font-size:1rem; font-weight:bold; color:#1b5e20; margin-bottom:4px;">${props.nom || 'Handie Proceso APELL'}</div>
+                            <div style="background:#e8f5e9; padding:6px 8px; border-radius:4px; border-left:3px solid #2e7d32; margin-bottom:6px; font-size:0.9rem;">
+                                <i class="fas fa-user-shield" style="color:#2e7d32; margin-right:4px;"></i> <strong>Responsable:</strong> ${props.res || 'No especificado'}
+                            </div>
+                            <div style="font-size:0.85rem; color:#444; margin-bottom:2px;"><i class="fas fa-map-marker-alt" style="color:#666; width:14px;"></i> ${props.dir || 'Sin dirección'}</div>`;
+                        if (props.num) {
+                            content += `<div style="font-size:0.85rem; color:#444; margin-bottom:2px;"><i class="fas fa-phone" style="color:#666; width:14px;"></i> Tel: ${props.num}</div>`;
+                        }
+                        if (props.obs) {
+                            content += `<div style="font-size:0.75rem; color:#777; margin-top:4px; font-style:italic;">${props.obs}</div>`;
+                        }
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        content += `</div>`;
+                        layer.bindPopup(content);
+                        if (props.nom) {
+                            layer.bindTooltip(formatMapLabel(props.nom), { permanent: true, direction: 'top', className: 'feature-label' });
+                        }
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...handiesGeoJSON.features].sort((a,b) => 
+                (a.properties.nom || "").localeCompare(b.properties.nom || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.nom || 'Handie Sin Nombre';
+                const resp = props.res ? `Resp: ${props.res}` : 'Sin responsable';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal; color:#e65100;"><i class="fas fa-user-shield" style="font-size:0.75em; margin-right:3px;"></i>${resp}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    const targetLayer = findFeatureLayer(handiesLayerGroup, feature);
+                    if (!targetLayer) return;
+
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
+                    } else {
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
+                    }
+                    zoomAHandie(feature);
+                    updateMainLayerVisibilityState('handies');
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando handies:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
     function toggleDropdown(capa) {
         const list = document.getElementById(capa + '-list');
         const chev = document.getElementById(capa + '-chevron');
@@ -2373,6 +2464,7 @@
         else if (capa === 'mangas') isMangasVisible = visible;
         else if (capa === 'puntos') isPuntosVisible = visible;
         else if (capa === 'sirenas') isSirenasVisible = visible;
+        else if (capa === 'handies') isHandiesVisible = visible;
     }
 
     function getLayerGroupByName(capa) {
@@ -2388,6 +2480,7 @@
         if (capa === 'mangas') return mangasLayerGroup;
         if (capa === 'puntos') return puntosLayerGroup;
         if (capa === 'sirenas') return sirenasLayerGroup;
+        if (capa === 'handies') return handiesLayerGroup;
         return null;
     }
 
@@ -2608,6 +2701,7 @@
     function zoomAManga(featureBuscar) { zoomAFeature(mangasLayerGroup, featureBuscar, 16); }
     function zoomAPunto(featureBuscar) { zoomAFeature(puntosLayerGroup, featureBuscar, 16); }
     function zoomASirena(featureBuscar) { zoomAFeature(sirenasLayerGroup, featureBuscar, 16); }
+    function zoomAHandie(featureBuscar) { zoomAFeature(handiesLayerGroup, featureBuscar, 16); }
 
     function handleGlobalSearch(e) {
         const query = e.target.value.toLowerCase().trim();
@@ -2705,6 +2799,15 @@
                 }
             });
         }
+        if (handiesGeoJSON) {
+            handiesGeoJSON.features.forEach(f => {
+                const title = f.properties.nom || 'Handie Proceso APELL';
+                const res = f.properties.res ? ` (${f.properties.res})` : '';
+                if ((title + res).toLowerCase().includes(query)) {
+                    matches.push({ layer: 'handies', feature: f, title: title + res, type: 'Handies Proceso APELL' });
+                }
+            });
+        }
 
         if (matches.length > 0) {
             resultsContainer.innerHTML = '';
@@ -2728,6 +2831,7 @@
                     if (m.layer === 'mangas' && !isMangasVisible) toggleLayer('mangas');
                     if (m.layer === 'puntos' && !isPuntosVisible) toggleLayer('puntos');
                     if (m.layer === 'sirenas' && !isSirenasVisible) toggleLayer('sirenas');
+                    if (m.layer === 'handies' && !isHandiesVisible) toggleLayer('handies');
 
                     setTimeout(() => {
                         if (m.layer === 'barrios') zoomABarrio(m.feature);
@@ -2742,6 +2846,7 @@
                         if (m.layer === 'mangas') zoomAManga(m.feature);
                         if (m.layer === 'puntos') zoomAPunto(m.feature);
                         if (m.layer === 'sirenas') zoomASirena(m.feature);
+                        if (m.layer === 'handies') zoomAHandie(m.feature);
                     }, 100);
                 };
                 resultsContainer.appendChild(item);
@@ -2832,6 +2937,7 @@
     initMangas();
     initPuntosEncuentro();
     initSirenas();
+    initHandies();
     initAreaInfluencia();
     toggleAreaInfluencia();
 

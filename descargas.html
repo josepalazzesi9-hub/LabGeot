@@ -300,6 +300,17 @@
         <a href="data/SIRENA_APELL.geojson" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar archivo</a>
       </div>
 
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-walkie-talkie"></i></div>
+        <h2 class="card-title">Handies Proceso APELL</h2>
+        <p class="card-desc">Ubicación de handies de comunicación y sus respectivos responsables asignados para la respuesta en emergencias.</p>
+        <div class="card-meta">
+          <span><i class="fas fa-file-code"></i> GeoJSON</span>
+          <span><i class="fas fa-weight-hanging"></i> 10.6 KB</span>
+        </div>
+        <a href="data/handies_procesoapell.geojson" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar archivo</a>
+      </div>
+
     </div>
   </div>
 
@@ -315,6 +326,7 @@
   <script src="data/mangas.js?v=2"></script>
   <script src="data/puntos_encuentro.js?v=2"></script>
   <script src="data/sirenas.js?v=2"></script>
+  <script src="data/handies.js?v=1"></script>
   <script>
     // Función para descargar un objeto como archivo JSON
     function descargarJSON(data, filename) {
@@ -343,7 +355,8 @@
       { selector: 'a[href*="Estab_deportivos.json"]', data: typeof deportivosData !== 'undefined' ? deportivosData : null, filename: 'Estab_deportivos.json' },
       { selector: 'a[href*="Sistema de respuesta primaria"]', data: typeof respuestaData !== 'undefined' ? respuestaData : null, filename: 'Sistema de respuesta primaria - Digitalización.json' },
       { selector: 'a[href*="Delegaciones_municipales"]', data: typeof delegacionesData !== 'undefined' ? delegacionesData : null, filename: 'Delegaciones_municipales_partido_Bahia_Blanca.geojson' },
-      { selector: 'a[href*="Escuelas"]', data: typeof escuelasData !== 'undefined' ? escuelasData : null, filename: 'Escuelas - Digitalización.geojson' }
+      { selector: 'a[href*="Escuelas"]', data: typeof escuelasData !== 'undefined' ? escuelasData : null, filename: 'Escuelas - Digitalización.geojson' },
+      { selector: 'a[href*="handies_procesoapell.geojson"]', data: typeof handiesData !== 'undefined' ? handiesData : null, filename: 'handies_procesoapell.geojson' }
     ];
 
     descargas.forEach(item => {
