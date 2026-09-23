@@ -5,9 +5,9 @@
   <meta charset="UTF-8">
   <!-- Vercel Preview Deployment -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="MapAPELL — Visor geoespacial del Proceso APELL Bahía Blanca. Consultá barrios, centros de evacuados, comedores comunitarios, establecimientos deportivos y recursos de respuesta primaria.">
+  <meta name="description" content="MapAPELL — Visor geoespacial del Proceso APELL Bahía Blanca. Consultá barrios, comedores comunitarios, establecimientos deportivos y recursos de respuesta primaria.">
   <meta property="og:title" content="MapAPELL | Visor Geoespacial APELL Bahía Blanca">
-  <meta property="og:description" content="Visor interactivo de recursos del Proceso APELL: barrios, centros de evacuados, comedores y respuesta primaria.">
+  <meta property="og:description" content="Visor interactivo de recursos del Proceso APELL: barrios, comedores y respuesta primaria.">
   <meta property="og:image" content="logo.png">
   <meta property="og:type" content="website">
   <title>MapAPELL | Visor Geoespacial APELL Bahía Blanca</title>
@@ -1016,16 +1016,6 @@
           <i class="fas fa-shield-alt"></i> Información proceso APELL
         </div>
 
-        <div class="layer-item" id="centros-btn" onclick="toggleDropdown('centros')">
-            <i class="fas fa-chevron-right" id="centros-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-hands-helping"></i>
-            <span class="layer-name">Centros de evacuados</span>
-            <i class="fas fa-eye-slash layer-visibility-icon" id="centros-visibility" onclick="event.stopPropagation(); toggleLayer('centros')"></i>
-        </div>
-        <div class="sub-layers" id="centros-list">
-            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando centros...</div>
-        </div>
-
         <div class="layer-item" id="mangas-btn" onclick="toggleDropdown('mangas')">
             <i class="fas fa-chevron-right" id="mangas-chevron" style="width:10px; margin-right:10px;"></i>
             <img src="img/manga_viento.png" alt="Mangas de viento" class="layer-icon-img">
@@ -1068,11 +1058,21 @@
 
         <div class="layer-item" id="handies-btn" onclick="toggleDropdown('handies')">
             <i class="fas fa-chevron-right" id="handies-chevron" style="width:10px; margin-right:10px;"></i>
-            <i class="fas fa-walkie-talkie" style="color: #e65100;"></i>
+            <i class="fas fa-walkie-talkie"></i>
             <span class="layer-name">Handies Proceso APELL</span>
             <i class="fas fa-eye-slash layer-visibility-icon" id="handies-visibility" onclick="event.stopPropagation(); toggleLayer('handies')"></i>
         </div>
         <div class="sub-layers" id="handies-list">
+            <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
+        </div>
+
+        <div class="layer-item" id="confinamiento-btn" onclick="toggleDropdown('confinamiento')">
+            <i class="fas fa-chevron-right" id="confinamiento-chevron" style="width:10px; margin-right:10px;"></i>
+            <i class="fas fa-house-chimney-crack"></i>
+            <span class="layer-name">Lugares de confinamiento</span>
+            <i class="fas fa-eye-slash layer-visibility-icon" id="confinamiento-visibility" onclick="event.stopPropagation(); toggleLayer('confinamiento')"></i>
+        </div>
+        <div class="sub-layers" id="confinamiento-list">
             <div style="padding:10px; color:#999; font-size:0.8rem; text-align:center;">Cargando...</div>
         </div>
 
@@ -1253,18 +1253,18 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="data/barrios.js?v=2"></script>
-  <script src="data/centros.js?v=2"></script>
   <script src="data/centros_salud.js?v=1"></script>
   <script src="data/comedores.js?v=2"></script>
   <script src="data/deportivos.js?v=2"></script>
   <script src="data/respuesta.js?v=2"></script>
   <script src="data/delegaciones.js?v=2"></script>
-  <script src="data/escuelas.js?v=2"></script>
+  <script src="data/escuelas.js?v=3"></script>
   <script src="data/empresas.js?v=3"></script>
   <script src="data/mangas.js?v=2"></script>
   <script src="data/puntos_encuentro.js?v=2"></script>
   <script src="data/sirenas.js?v=2"></script>
   <script src="data/handies.js?v=1"></script>
+  <script src="data/confinamiento.js?v=1"></script>
   <script>
 
     const map = L.map('map', { zoomControl: false }).setView([-38.7833, -62.2667], 14);
@@ -1369,10 +1369,6 @@
     let barriosLayerGroup = null;
     let isBarriosVisible = false;
 
-    let centrosGeoJSON = null;
-    let centrosLayerGroup = null;
-    let isCentrosVisible = false;
-
     let centrosSaludGeoJSON = null;
     let centrosSaludLayerGroup = null;
     let isCentrosSaludVisible = false;
@@ -1416,6 +1412,10 @@
     let handiesGeoJSON = null;
     let handiesLayerGroup = null;
     let isHandiesVisible = false;
+
+    let confinamientoGeoJSON = null;
+    let confinamientoLayerGroup = null;
+    let isConfinamientoVisible = false;
 
 
 
@@ -1493,79 +1493,6 @@
             });
         } catch(e) {
             console.error("Error cargando barrios:", e);
-            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
-        }
-    }
-
-    function initCentros() {
-        const listDiv = document.getElementById('centros-list');
-        try {
-            if(typeof centrosData === 'undefined') {
-                throw new Error("El archivo centros.js no se cargó.");
-            }
-
-            centrosGeoJSON = centrosData;
-            if(!centrosLayerGroup) {
-                const centerMarkers = [];
-                const geoJsonLayer = L.geoJSON(centrosGeoJSON, {
-                    style: { color: '#d32f2f', weight: 2, fillColor: '#f44336', fillOpacity: 0.3 },
-                    pointToLayer: (feature, latlng) => L.marker(latlng, { icon: createCustomIcon('fas fa-hands-helping', '#d32f2f') }),
-                    onEachFeature: (feature, layer) => {
-                        const props = feature.properties;
-                        const center = getLayerCenter(layer);
-                        let content = `<b>${props.nom || 'Centro de Evacuados'}</b><br>Dirección: ${props.dir || '-'}<br>Tipo: ${props.tip || '-'}`;
-                        if (center) {
-                            content += renderPopupRouteButtons(center.lat, center.lng);
-                            if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
-                                const iconMarker = L.marker(center, { icon: createCustomIcon('fas fa-hands-helping', '#d32f2f') });
-                                iconMarker.bindPopup(content);
-                                if (props.nom) {
-                                    iconMarker.bindTooltip(formatMapLabel(props.nom), { permanent: true, direction: 'top', className: 'feature-label' });
-                                }
-                                centerMarkers.push(iconMarker);
-                            }
-                        }
-                        layer.bindPopup(content);
-                        if (props.nom) {
-                            layer.bindTooltip(formatMapLabel(props.nom), { permanent: true, direction: 'top', className: 'feature-label' });
-                        }
-                    }
-                });
-                centrosLayerGroup = L.featureGroup([geoJsonLayer, ...centerMarkers]);
-            }
-
-            const featuresOrdenados = [...centrosGeoJSON.features].sort((a,b) => 
-                (a.properties.nom || "").localeCompare(b.properties.nom || "")
-            );
-
-            listDiv.innerHTML = '';
-            
-            featuresOrdenados.forEach((feature) => {
-                const item = document.createElement('div');
-                item.className = 'sub-layer-item';
-                const props = feature.properties;
-                const nom = props.nom || 'Centro Sin Nombre';
-                const dir = props.dir || 'Sin dirección';
-                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${dir}</div>`;
-                item.onclick = (e) => {
-                    e.stopPropagation();
-                    const targetLayer = findFeatureLayer(centrosLayerGroup, feature);
-                    if (!targetLayer) return;
-
-                    if (!map.hasLayer(targetLayer)) {
-                        map.addLayer(targetLayer);
-                        item.classList.add('active');
-                    } else {
-                        map.removeLayer(targetLayer);
-                        item.classList.remove('active');
-                    }
-                    zoomACentro(feature);
-                    updateMainLayerVisibilityState('centros');
-                };
-                listDiv.appendChild(item);
-            });
-        } catch(e) {
-            console.error("Error cargando centros:", e);
             listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
         }
     }
@@ -2341,7 +2268,7 @@
             if(!handiesLayerGroup) {
                 handiesLayerGroup = L.geoJSON(handiesGeoJSON, {
                     pointToLayer: function (feature, latlng) {
-                        return L.marker(latlng, { icon: createCustomIcon('fas fa-walkie-talkie', '#e65100') });
+                        return L.marker(latlng, { icon: createCustomIcon('fas fa-walkie-talkie', '#2e7d32') });
                     },
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties;
@@ -2406,6 +2333,82 @@
         }
     }
 
+    function initConfinamiento() {
+        const listDiv = document.getElementById('confinamiento-list');
+        try {
+            if(typeof confinamientoData === 'undefined') {
+                throw new Error("El archivo confinamiento.js no se cargó.");
+            }
+
+            confinamientoGeoJSON = confinamientoData;
+            // Filtrar features sin geometría
+            const featuresConGeom = confinamientoGeoJSON.features.filter(f => f.geometry !== null);
+            if(!confinamientoLayerGroup) {
+                confinamientoLayerGroup = L.geoJSON({ ...confinamientoGeoJSON, features: featuresConGeom }, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.marker(latlng, { icon: createCustomIcon('fas fa-house-chimney-crack', '#6a1b9a') });
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const center = getLayerCenter(layer);
+                        let content = `<div style="font-family:'Roboto',sans-serif;">
+                            <div style="font-size:1rem; font-weight:bold; color:#6a1b9a; margin-bottom:4px;">${props.Nombre || 'Lugar de Confinamiento'}</div>`;
+                        if (props['Categorí']) {
+                            content += `<div style="background:#f3e5f5; padding:4px 8px; border-radius:4px; border-left:3px solid #6a1b9a; margin-bottom:6px; font-size:0.85rem;">
+                                <i class="fas fa-tag" style="color:#6a1b9a; margin-right:4px;"></i> <strong>Categoría:</strong> ${props['Categorí']}
+                            </div>`;
+                        }
+                        if (props['Dirección']) {
+                            content += `<div style="font-size:0.85rem; color:#444; margin-bottom:2px;"><i class="fas fa-map-marker-alt" style="color:#666; width:14px;"></i> ${props['Dirección']}</div>`;
+                        }
+                        if (center) {
+                            content += renderPopupRouteButtons(center.lat, center.lng);
+                        }
+                        content += `</div>`;
+                        layer.bindPopup(content);
+                        if (props.Nombre) {
+                            layer.bindTooltip(formatMapLabel(props.Nombre), { permanent: true, direction: 'top', className: 'feature-label' });
+                        }
+                    }
+                });
+            }
+
+            const featuresOrdenados = [...featuresConGeom].sort((a,b) => 
+                (a.properties.Nombre || "").localeCompare(b.properties.Nombre || "")
+            );
+
+            listDiv.innerHTML = '';
+            
+            featuresOrdenados.forEach((feature) => {
+                const item = document.createElement('div');
+                item.className = 'sub-layer-item';
+                const props = feature.properties;
+                const nom = props.Nombre || 'Sin Nombre';
+                const cat = props['Categorí'] || '';
+                item.innerHTML = `<div>${nom}</div><div style="font-size:0.85em; opacity:0.8; line-height:1.2; margin-top:2px; font-weight:normal;">${cat}</div>`;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    const targetLayer = findFeatureLayer(confinamientoLayerGroup, feature);
+                    if (!targetLayer) return;
+
+                    if (!map.hasLayer(targetLayer)) {
+                        map.addLayer(targetLayer);
+                        item.classList.add('active');
+                    } else {
+                        map.removeLayer(targetLayer);
+                        item.classList.remove('active');
+                    }
+                    zoomAConfinamiento(feature);
+                    updateMainLayerVisibilityState('confinamiento');
+                };
+                listDiv.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error cargando confinamiento:", e);
+            listDiv.innerHTML = '<div style="padding:10px; color:red; font-size:0.8rem; text-align:center;">Error cargando datos. (' + e.message + ')</div>';
+        }
+    }
+
     function toggleDropdown(capa) {
         const list = document.getElementById(capa + '-list');
         const chev = document.getElementById(capa + '-chevron');
@@ -2453,7 +2456,6 @@
 
     function setLayerVisibleVar(capa, visible) {
         if (capa === 'barrios') isBarriosVisible = visible;
-        else if (capa === 'centros') isCentrosVisible = visible;
         else if (capa === 'centros_salud') isCentrosSaludVisible = visible;
         else if (capa === 'comedores') isComedoresVisible = visible;
         else if (capa === 'deportivos') isDeportivosVisible = visible;
@@ -2465,11 +2467,11 @@
         else if (capa === 'puntos') isPuntosVisible = visible;
         else if (capa === 'sirenas') isSirenasVisible = visible;
         else if (capa === 'handies') isHandiesVisible = visible;
+        else if (capa === 'confinamiento') isConfinamientoVisible = visible;
     }
 
     function getLayerGroupByName(capa) {
         if (capa === 'barrios') return barriosLayerGroup;
-        if (capa === 'centros') return centrosLayerGroup;
         if (capa === 'centros_salud') return centrosSaludLayerGroup;
         if (capa === 'comedores') return comedoresLayerGroup;
         if (capa === 'deportivos') return deportivosLayerGroup;
@@ -2481,6 +2483,7 @@
         if (capa === 'puntos') return puntosLayerGroup;
         if (capa === 'sirenas') return sirenasLayerGroup;
         if (capa === 'handies') return handiesLayerGroup;
+        if (capa === 'confinamiento') return confinamientoLayerGroup;
         return null;
     }
 
@@ -2690,7 +2693,6 @@
     }
 
     function zoomABarrio(featureBuscar) { zoomAFeature(barriosLayerGroup, featureBuscar, 15); }
-    function zoomACentro(featureBuscar) { zoomAFeature(centrosLayerGroup, featureBuscar, 15); }
     function zoomACentroSalud(featureBuscar) { zoomAFeature(centrosSaludLayerGroup, featureBuscar, 16); }
     function zoomAComedor(featureBuscar) { zoomAFeature(comedoresLayerGroup, featureBuscar, 16); }
     function zoomADeportivo(featureBuscar) { zoomAFeature(deportivosLayerGroup, featureBuscar, 15); }
@@ -2702,6 +2704,7 @@
     function zoomAPunto(featureBuscar) { zoomAFeature(puntosLayerGroup, featureBuscar, 16); }
     function zoomASirena(featureBuscar) { zoomAFeature(sirenasLayerGroup, featureBuscar, 16); }
     function zoomAHandie(featureBuscar) { zoomAFeature(handiesLayerGroup, featureBuscar, 16); }
+    function zoomAConfinamiento(featureBuscar) { zoomAFeature(confinamientoLayerGroup, featureBuscar, 16); }
 
     function handleGlobalSearch(e) {
         const query = e.target.value.toLowerCase().trim();
@@ -2718,13 +2721,6 @@
             barriosGeoJSON.features.forEach(f => {
                 if (f.properties.nom && f.properties.nom.toLowerCase().includes(query)) {
                     matches.push({ layer: 'barrios', feature: f, title: f.properties.nom, type: 'Barrio Proceso APELL' });
-                }
-            });
-        }
-        if (centrosGeoJSON) {
-            centrosGeoJSON.features.forEach(f => {
-                if (f.properties.nom && f.properties.nom.toLowerCase().includes(query)) {
-                    matches.push({ layer: 'centros', feature: f, title: f.properties.nom, type: 'Centro de Evacuados' });
                 }
             });
         }
@@ -2808,6 +2804,14 @@
                 }
             });
         }
+        if (confinamientoGeoJSON) {
+            confinamientoGeoJSON.features.filter(f => f.geometry !== null).forEach(f => {
+                const title = f.properties.Nombre || 'Lugar de Confinamiento';
+                if (title.toLowerCase().includes(query)) {
+                    matches.push({ layer: 'confinamiento', feature: f, title: title, type: 'Lugar de Confinamiento' });
+                }
+            });
+        }
 
         if (matches.length > 0) {
             resultsContainer.innerHTML = '';
@@ -2820,7 +2824,6 @@
                     e.target.value = '';
                     
                     if (m.layer === 'barrios' && !isBarriosVisible) toggleLayer('barrios');
-                    if (m.layer === 'centros' && !isCentrosVisible) toggleLayer('centros');
                     if (m.layer === 'centros_salud' && !isCentrosSaludVisible) toggleLayer('centros_salud');
                     if (m.layer === 'comedores' && !isComedoresVisible) toggleLayer('comedores');
                     if (m.layer === 'deportivos' && !isDeportivosVisible) toggleLayer('deportivos');
@@ -2832,10 +2835,10 @@
                     if (m.layer === 'puntos' && !isPuntosVisible) toggleLayer('puntos');
                     if (m.layer === 'sirenas' && !isSirenasVisible) toggleLayer('sirenas');
                     if (m.layer === 'handies' && !isHandiesVisible) toggleLayer('handies');
+                    if (m.layer === 'confinamiento' && !isConfinamientoVisible) toggleLayer('confinamiento');
 
                     setTimeout(() => {
                         if (m.layer === 'barrios') zoomABarrio(m.feature);
-                        if (m.layer === 'centros') zoomACentro(m.feature);
                         if (m.layer === 'centros_salud') zoomACentroSalud(m.feature);
                         if (m.layer === 'comedores') zoomAComedor(m.feature);
                         if (m.layer === 'deportivos') zoomADeportivo(m.feature);
@@ -2847,6 +2850,7 @@
                         if (m.layer === 'puntos') zoomAPunto(m.feature);
                         if (m.layer === 'sirenas') zoomASirena(m.feature);
                         if (m.layer === 'handies') zoomAHandie(m.feature);
+                        if (m.layer === 'confinamiento') zoomAConfinamiento(m.feature);
                     }, 100);
                 };
                 resultsContainer.appendChild(item);
@@ -2926,7 +2930,6 @@
     }
 
     initBarrios();
-    initCentros();
     initCentrosSalud();
     initComedores();
     initDeportivos();
@@ -2938,6 +2941,7 @@
     initPuntosEncuentro();
     initSirenas();
     initHandies();
+    initConfinamiento();
     initAreaInfluencia();
     toggleAreaInfluencia();
 

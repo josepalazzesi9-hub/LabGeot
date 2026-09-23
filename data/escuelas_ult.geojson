@@ -1,4 +1,4 @@
-const escuelasData = {
+{
 "type": "FeatureCollection",
 "name": "escuelas_ult",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
@@ -32,4 +32,3 @@ const escuelasData = {
 { "type": "Feature", "properties": { "id": 2, "nom": "Colegio Sarmiento Secundario", "dir": "Jose Sisco 3547", "res": null, "num": "2916481047", "adm": "Facundo Retondo", "mat": 288, "cue": 61912400, "con": null, "cap": null }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -62.265900353251915, -38.781236693260439 ], [ -62.265987263653251, -38.781173416389294 ], [ -62.265916744248663, -38.781120812725327 ], [ -62.265911026459101, -38.781132629490422 ], [ -62.265824497243749, -38.781057345261189 ], [ -62.265757408512897, -38.781109948925156 ], [ -62.265900353251915, -38.781236693260439 ] ] ] ] } }
 ]
 }
-;

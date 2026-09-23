@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="description" content="MapAPELL — Portal de descargas de capas geoespaciales (GeoJSON) del Proceso APELL Bahía Blanca.">
   <meta property="og:title" content="Portal de Descargas | MapAPELL">
-  <meta property="og:description" content="Descargá las capas geoespaciales (GeoJSON) de barrios, centros de evacuados, comedores comunitarios y respuesta primaria.">
+  <meta property="og:description" content="Descargá las capas geoespaciales (GeoJSON) de barrios, comedores comunitarios y respuesta primaria.">
   <meta property="og:image" content="logo.png">
   <meta property="og:type" content="website">
   <title>Portal de Descargas | MapAPELL</title>
@@ -180,17 +180,6 @@
       </div>
 
       <div class="card">
-        <div class="card-icon"><i class="fas fa-hands-helping"></i></div>
-        <h2 class="card-title">Centros de evacuados</h2>
-        <p class="card-desc">Ubicaciones designadas como refugios y centros de concentración para evacuación durante emergencias.</p>
-        <div class="card-meta">
-          <span><i class="fas fa-file-code"></i> GeoJSON</span>
-          <span><i class="fas fa-weight-hanging"></i> 14.0 KB</span>
-        </div>
-        <a href="data/Centro de evacuados - Digitalización.json" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar archivo</a>
-      </div>
-
-      <div class="card">
         <div class="card-icon"><i class="fas fa-notes-medical"></i></div>
         <h2 class="card-title">Centros de salud</h2>
         <p class="card-desc">Polígonos digitalizados de la infraestructura de salud pública de Bahía Blanca (Hospitales, Unidades Sanitarias, CAPS y Salas Médicas).</p>
@@ -251,9 +240,9 @@
         <p class="card-desc">Polígonos de escuelas, colegios y jardines de infantes digitalizados para la planificación preventiva.</p>
         <div class="card-meta">
           <span><i class="fas fa-file-code"></i> GeoJSON</span>
-          <span><i class="fas fa-weight-hanging"></i> 35.7 KB</span>
+          <span><i class="fas fa-weight-hanging"></i> 18.3 KB</span>
         </div>
-        <a href="data/ESCUELAS.geojson" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar archivo</a>
+        <a href="data/escuelas_ult.geojson" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar archivo</a>
       </div>
 
       <div class="card">
@@ -311,22 +300,33 @@
         <a href="data/handies_procesoapell.geojson" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar archivo</a>
       </div>
 
+      <div class="card">
+        <div class="card-icon"><i class="fas fa-house-chimney-crack"></i></div>
+        <h2 class="card-title">Lugares de confinamiento</h2>
+        <p class="card-desc">Lugares relevados con capacidad de confinamiento para la protección de personas durante emergencias químicas en el área de influencia APELL.</p>
+        <div class="card-meta">
+          <span><i class="fas fa-file-code"></i> GeoJSON</span>
+          <span><i class="fas fa-weight-hanging"></i> 25.5 KB</span>
+        </div>
+        <a href="data/confinamiento_act.geojson" download class="download-btn"><i class="fas fa-download" style="margin-right:8px;"></i>Descargar archivo</a>
+      </div>
+
     </div>
   </div>
 
   <script src="data/barrios.js?v=2"></script>
-  <script src="data/centros.js?v=2"></script>
   <script src="data/centros_salud.js?v=1"></script>
   <script src="data/comedores.js?v=2"></script>
   <script src="data/deportivos.js?v=2"></script>
   <script src="data/respuesta.js?v=2"></script>
   <script src="data/delegaciones.js?v=2"></script>
-  <script src="data/escuelas.js?v=2"></script>
+  <script src="data/escuelas.js?v=3"></script>
   <script src="data/empresas.js?v=3"></script>
   <script src="data/mangas.js?v=2"></script>
   <script src="data/puntos_encuentro.js?v=2"></script>
   <script src="data/sirenas.js?v=2"></script>
   <script src="data/handies.js?v=1"></script>
+  <script src="data/confinamiento.js?v=1"></script>
   <script>
     // Función para descargar un objeto como archivo JSON
     function descargarJSON(data, filename) {
@@ -349,14 +349,14 @@
     // Configuración de los botones de descarga con sus respectivos datos JS y nombres de archivo
     const descargas = [
       { selector: 'a[href*="BARRIOS_PROCESO_APELL.json"]', data: typeof barriosData !== 'undefined' ? barriosData : null, filename: 'BARRIOS_PROCESO_APELL.json' },
-      { selector: 'a[href*="Centro de evacuados"]', data: typeof centrosData !== 'undefined' ? centrosData : null, filename: 'Centro de evacuados - Digitalización.json' },
       { selector: 'a[href*="Centros de Salud"]', data: typeof centrosSaludData !== 'undefined' ? centrosSaludData : null, filename: 'Centros de Salud - Digitalización.geojson' },
       { selector: 'a[href*="comedores_com.json"]', data: typeof comedoresData !== 'undefined' ? comedoresData : null, filename: 'comedores_com.json' },
       { selector: 'a[href*="Estab_deportivos.json"]', data: typeof deportivosData !== 'undefined' ? deportivosData : null, filename: 'Estab_deportivos.json' },
       { selector: 'a[href*="Sistema de respuesta primaria"]', data: typeof respuestaData !== 'undefined' ? respuestaData : null, filename: 'Sistema de respuesta primaria - Digitalización.json' },
       { selector: 'a[href*="Delegaciones_municipales"]', data: typeof delegacionesData !== 'undefined' ? delegacionesData : null, filename: 'Delegaciones_municipales_partido_Bahia_Blanca.geojson' },
-      { selector: 'a[href*="Escuelas"]', data: typeof escuelasData !== 'undefined' ? escuelasData : null, filename: 'Escuelas - Digitalización.geojson' },
-      { selector: 'a[href*="handies_procesoapell.geojson"]', data: typeof handiesData !== 'undefined' ? handiesData : null, filename: 'handies_procesoapell.geojson' }
+      { selector: 'a[href*="escuelas_ult.geojson"]', data: typeof escuelasData !== 'undefined' ? escuelasData : null, filename: 'escuelas_ult.geojson' },
+      { selector: 'a[href*="handies_procesoapell.geojson"]', data: typeof handiesData !== 'undefined' ? handiesData : null, filename: 'handies_procesoapell.geojson' },
+      { selector: 'a[href*="confinamiento_act.geojson"]', data: typeof confinamientoData !== 'undefined' ? confinamientoData : null, filename: 'confinamiento_act.geojson' }
     ];
 
     descargas.forEach(item => {
